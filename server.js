@@ -62,9 +62,9 @@ app.use(passDataToView);
 
 app.use((req,res,next) => {
     console.log("-->>>SESSION USER:", 
-        "| username:", req.session.user.username,
-        "| displayname:", req.session.user.profile.displayname,
-        "| photo", req.session.user.profile.photo.url
+        "| username:", req.session.user?.username,
+        "| displayname:", req.session.user?.profile?.displayname,
+        "| photo", req.session.user?.profile?.photo.url
     )
     next();
 })
