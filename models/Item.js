@@ -87,40 +87,42 @@ itemSchema.pre('save', async function() {
 })
 
 // Create
-itemSchema.pre('save', async function() {
-    if (!this.isNew) return;
+// itemSchema.pre('save', async function() {
+//     if (!this.isNew) return;
+// console.log("COMPILE NEW EXPENSE.ITEM", this);
+//     typeof this.for===null && delete this.for;
 
-    typeof this.for===null && delete this.for;
+//     for (let key in this) {
+//         if (/assignees/.test(key)) {
+//             console.log("PARSE ASIGNEE FOR ITEM", this);
+//             this[key].created_at = Date.now();
+//             this.assignees.push(this[key])
+//         };
+//         if (/photo/.test(key)) {
+//             this.webLinks.push( new WebLink({
+//                 title:this[key][0],
+//                 description:this[key][1],
+//                 url:this[key][2],
+//             }) )
+//         };
+//     };
 
-    for (let key in this) {
-        if (/assignees/.test(key)) {
-            this[key].created_at = Date.now();
-            this.assignees.push(this[key])
-        };
-        if (/photo/.test(key)) {
-            this.webLinks.push( new WebLink({
-                title:this[key][0],
-                description:this[key][1],
-                url:this[key][2],
-            }) )
-        };
-    };
+//     const upstream = await Expense.findById(this.for);
+//     upstream.items.push(this._id);
+//     upstream.totals.items.push(this.amount);
+//     upstream.save();
 
-    const upstream = await Expense.findById(this.for);
-    upstream.items.push(this._id);
-    upstream.totals.items.push(this.amount);
-    upstream.save();
+//     const upstreamTracker = await Tracker.findById(upstream.for);
+//     upstreamTracker.totals.expenses.push(this.amount);
+//     upstreamTracker.save();
+//     await this.save();
+// console.log("DONE COMPILING EXPENSE.ITEM", this);
+//     return;
+// });
 
-    const upstreamTracker = await Tracker.findById(upstream.for);
-    upstreamTracker.totals.expenses.push(this.amount);
-    upstreamTracker.save();
-
-    return;
-});
-
-creditSchema.pre('save', function() {
-    this.created_at = Date.now();
-});
+// creditSchema.pre('save', function() {
+//     this.created_at = Date.now();
+// });
 
 //* MODEL
 const Item = mongoose.model('Item', itemSchema);

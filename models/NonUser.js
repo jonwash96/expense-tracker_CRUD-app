@@ -1,13 +1,14 @@
 //* MNT
 const mongoose = require('mongoose');
+const { Notification, notificationSchema } = require('./User.js');
 
 //* DATA
 const nonUserProfileSchema = new mongoose.Schema({
-    username:{type:String, required:true, unique:true},
+    username:{type:String, required:true},
     displayname:{type:String, required:true},
     userID:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:'User',
+        ref:'NonUser',
         required:true
     },
     photo:{
@@ -15,25 +16,15 @@ const nonUserProfileSchema = new mongoose.Schema({
         ref:'WebLink',
         required:false
     },
-    friends:[{
-        type:mongoose.Schema.Types.ObjectId, 
-        ref:'UserProfile',
-        required:false
-    }]
-})
+});
 
-const userSchema = new mongoose.Schema({
+const nonUserSchema = new mongoose.Schema({
     created_at:{type:Number, required:true},
     username:{type:String, required:true},
     profile:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:'UserProfile',
+        ref:'NonUserProfile',
         required:true,
-    },
-    password:{
-        type:String,
-        required:true,
-        selected:false
     },
     activities:[{
         type:mongoose.Schema.Types.ObjectId,
@@ -41,22 +32,7 @@ const userSchema = new mongoose.Schema({
         required:false,
         default:[]
     }],
-    notifications:[{
-        status:{type:String, required:true, default:'unseen'},
-        created_at:{type:String, required:true, default:Date.now()},
-        bodyID:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:'Activity',
-            required:false,
-        },
-        default:[]
-    }],
-    trackers:[{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Tracker',
-        required:false,
-        default:[]
-    }],
+    notifications:[{type:notificationSchema, required:false}],
     expenses:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Expense',
@@ -84,15 +60,14 @@ const userSchema = new mongoose.Schema({
 });
 
 //* MID
-userSchema.pre('validate', function() {
-    console.log(this)
+nonUserSchema.pre('validate', function() {
     if (!this.displayname) this.displayname = this.username;
     if (this.isNew) this.created_at = Date.now();
 })
 
 //* MODEL
-const User = mongoose.model('User', userSchema);
-const UserProfile = mongoose.model('UserProfile', userProfileSchema);
+const NonUser = mongoose.model('NonUser', nonUserSchema);
+const NonUserProfile = mongoose.model('NonUserProfile', nonUserProfileSchema);
 
 //* IO
-module.exports = { User, UserProfile };
+module.exports = { NonUser, NonUserProfile };

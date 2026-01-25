@@ -37,12 +37,17 @@ app.use(session({
 
 app.use(async (req,res,next) => {
     if (req.session.user) {
-        try { if (!req.session.user.profile.photo.url) {
+        try { if (req.session.user.profile.photo.url) {
+                next();
+            } else {
                 req.session.user = await User.findById(req.session.user)
-                        .populate('profile.friends profile.photo notifications.bodyID');
-                    res.locals.user = req.session.user;
-                    req.session.save(()=>next());
-            } else next();
+                    .populate({path: 'notifications', populate:{path:'bodyID'}, options:{limit:50}})
+                    .populate({path: 'profile', populate:{path: 'friends'}})
+                    .populate({path: 'profile', populate:{path: 'photo'}})
+                    .populate('activities');
+                res.locals.user = req.session.user;
+                req.session.save(()=>next());
+            }
         } catch (err) {
             if (err.message.includes("Cannot read properties of undefined (reading 'url')")) {
                 try {
@@ -64,7 +69,7 @@ app.use((req,res,next) => {
     console.log("-->>>SESSION USER:", 
         "| username:", req.session.user?.username,
         "| displayname:", req.session.user?.profile?.displayname,
-        "| photo", req.session.user?.profile?.photo.url
+        "| photo", req.session.user?.profile?.photo?.url
     )
     next();
 })

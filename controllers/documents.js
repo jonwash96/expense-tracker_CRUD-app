@@ -3,11 +3,13 @@ const express = require('express');
 const router = express.Router();
 const { handleRouteError, hydrateTotals } = require('../helperFunctions.js');
 const { User, UserProfile } = require('../models/User.js');
+const { NonUser, NonUserProfile } = require('../models/NonUser.js');
 const Tracker = require('../models/Tracker.js');
 const { Expense, expenseSchema } = require('../models/Expense.js');
 const Activity = require('../models/Activity');
 const { WebLink, webLinkSchema} = require('../models/WebLink.js');
 const { Item, itemSchema } = require('../models/Item.js');
+const mongoose = require('mongoose');
 
 //* VAR
 const documentTypes = {Tracker, Expense, Item};
@@ -15,6 +17,10 @@ const documentTypes = {Tracker, Expense, Item};
 //* APP
 
 //* MID
+router.use((req,res,next) => {
+    console.log(3.1)
+    next();
+})
 
 //* ROUTE
 // Index - GET (all items) => "All User's Documents" :: Populate all user content, let js/dom/user-interaction handle which/how to show
@@ -34,6 +40,7 @@ router.get('/', async (req,res) => {
 
 // New - GET (empty form) => "New Document" :: Create a new Document [Tracker, Expense, Item]
 router.get('/:documentType/new', async (req,res) => {
+    if (!res.locals.user.friends) res.locals.user.friends = [];
     res.render(`documents/${req.params.documentType}/new.ejs`);
 })
 
@@ -79,7 +86,44 @@ router.put('/:documentType/:documentId', async (req,res) => {
     for (let D in documentTypes) {
         D===req.params.documentType && (Document = documentTypes[D])
     };
-    try { 
+    try {
+        if (req.body.NUmembers) {
+            for (let NUmember of req.body.NUmembers) {
+                const NUuserID = new mongoose.Types.ObjectId();
+                const NUuserprofileID = new mongoose.Types.ObjectId();
+
+                const newNonUserProfile = new UserProfile({
+                    _id:NUuserprofileID,
+                    username:"NU-"+NUmember.replace(' ', '_'),
+                    displayname:NUmember,
+                    userID:NUuserID,
+                    NUuserPhotoID:'6975f97cfad10aa219182dc5'
+                });
+                const newNonUser = new User({
+                    _id:NUuserID,
+                    username:"NU-"+NUmember.replace(' ', '_'),
+                    password:'nonuser',
+                    profile:NUuserprofileID,
+                });
+                const account = await newNonUser.save();
+                const profile = await newNonUserProfile.save();
+                console.log("\n\n\nACCOUNT", account)
+                console.log("\nROFILE", profile)
+
+                req.session.user.friends.push(NUuserID);
+                if (!req.body.members) req.body.members = [];
+                req.body.members.push(NUuserprofileID);
+
+                for (let key in req.body) {const value = req.body[key];
+                    if (/assignees/.test(key)) {
+                        value.forEach(id => {
+                            if (id===NUmember) id = NUuserprofileID;
+                        })
+                    }
+                }
+            }
+        };
+
         let doc = await Document.findById(req.params.documentId);
 
         doc['_updatedValues'] = req.body;
@@ -114,7 +158,42 @@ router.put('/:documentType/:documentId', async (req,res) => {
 
 // Create - POST (submission) => "Create Document" Create a new Document
 router.post('/Tracker', async (req,res) => {
+console.log(req.body)
     try {
+        if (req.body.NUmembers) {
+            for (let NUmember of req.body.NUmembers) {
+                const NUuserID = new mongoose.Types.ObjectId();
+                const NUuserprofileID = new mongoose.Types.ObjectId();
+
+                const newNonUserProfile = new NonUserProfile({
+                    _id:NUuserprofileID,
+                    username:NUmember.replace(' ', '_'),
+                    displayname:NUmember,
+                    userID:NUuserID,
+                    NUuserPhotoID:'6975f97cfad10aa219182dc5'
+                });
+                const newNonUser = new NonUser({
+                    _id:NUuserID,
+                    username:NUmember.replace(' ', '_'),
+                    profile:NUuserprofileID,
+                });
+                await newNonUser.save();
+                await newNonUserProfile.save();
+
+                req.session.user.friends.push(NUuserID);
+                if (!req.body.members) req.body.members = [];
+                req.body.members.push(NUuserprofileID);
+
+                for (let key in req.body) {const value = req.body[key];
+                    if (/assignees/.test(key)) {
+                        value.forEach(id => {
+                            if (id===NUmember) id = NUuserprofileID;
+                        })
+                    }
+                }
+            }
+        };
+
         const newTrackerId = new mongoose.Types.ObjectId();
         let newDoc = new Tracker({ 
             ...req.body, 
@@ -124,27 +203,36 @@ router.post('/Tracker', async (req,res) => {
         newDoc.save();
 
         req.session.user.trackers.push(newDoc._id);
-        req.session.user.save();
+        req.session.save();
 
-        const getMembers = await Promise.all( req.body.members.map(async (member) => {
-            return await UserProfile.findById(member) 
-        }) );
-        const members = {
-            names: getMembers.map(member => member.username),
-            ids: getMembers.map(member => member._id)
-        };
+
+        let members, getMembers;
+        if (req.body.members) {
+            getMembers = await Promise.all( req.body.members.map(async (member) => {
+                return await UserProfile.findById(member) 
+            }) );
+            getMembers = getMembers.filter(result => result !== null);
+
+            members = {
+                names: getMembers.map(member => member.username),
+                ids: getMembers.map(member => member._id)
+            };
+        }
+
         let newActivity = new Activity({
             category:'create',
             priority:3,
             title:`New Tracker Created`,
             description:`${req.session.user.profile.displayname} created a new Tracker called ${newDoc.name} with ${members.names.join(', ')}`,
-            users: members.ids
+            users: members ? members.ids : []
         });
         newActivity = await newActivity.save();
-        for (let member of getMembers) {
-            const user = await User.findById(member.userID);
-            user.notifications.push({ bodyID: newActivity._id, created_at:Date.now() });
-        };
+        if (getMembers) {
+            for (let member of getMembers) {
+                const user = await User.findById(member.userID);
+                user.notifications.push({ bodyID: newActivity._id, created_at:Date.now() });
+            };
+        }
         req.session.user.activities.push(newActivity._id);
 
         req.session.save(()=>res.status(200).redirect(`/documents/Tracker/${newTrackerId}`));
@@ -246,6 +334,20 @@ router.post('/Item', async (req,res) => {
 })
 
 // Edit - GET (populated form) => "Edit Document"
+router.get('/Tracker/:documentId/edit', async (req,res) => {
+    try {
+        const doc = await Tracker.findById(req.params.documentId)
+            .populate('members')
+            .populate('owner')
+            .populate('expenses.items.assignees.credits');
+
+        console.log(doc)
+        res.render('documents/Tracker/edit.ejs', { tracker:doc });
+    } catch (err) {
+        handleRouteError(req,res,err, 500)
+    };
+})
+
 router.get('/:documentType/:documentId/edit', async (req,res) => {
     let Document;
     for (let D in documentTypes) {
@@ -259,33 +361,51 @@ router.get('/:documentType/:documentId/edit', async (req,res) => {
     };
 })
 
+router.use((req,res,next) => {
+    console.log(3.2)
+    next();
+});
+
 // Show - GET (one item) => "Item Title" :: View a single document
 router.get('/Tracker/:documentId', async (req,res) => {
-    try {
-        if (!session.locals.tracker | !session.locals.tracker.isHydrated) {
-            const doc = await Tracker.findById(req.params.documentId)
+console.log(4)
+    try { let doc;
+        console.log(5)
+        if (!req.session.tracker | !req.session.tracker?.isHydrated) {
+console.log(6, req.session.tracker)
+            doc = await Tracker.findById(req.params.documentId)
                 .populate('members')
                 .populate('owner')
                 .populate('expenses.items.assignees.credits');
-
+console.log(7, doc)
             hydrateTotals(doc);
+console.log(8, doc)
             doc.expenses.forEach(expense => {
                 hydrateTotals(expense);
                 expense.items.forEach(item => {
                     item['credits_total'] = item.assignees.map(assignment => 
                         assignment.credits.reduce((a,b) => a.amount += b.amount, 0) )
             }) });
-            
+console.log(9)
             doc['recents'] = doc.expenses.map(expense => 
                 expense.items.sort((a,b) => b.updated_at - a.updated_at)
             ).flat();
-            
+
             doc['isHydrated'] = true;
+console.log(10)
+
+            req.session.tracker = doc;
+            req.session.save();
         }
-        res.render('/documents/Tracker/show.ejs')
+        res.render('documents/Tracker/show.ejs', { tracker:doc })
     } catch (err) {
         handleRouteError(req,res,err, 500);
     }
+})
+
+router.use((req,res,next) => {
+    console.log(3.3)
+    next();
 })
 
 router.get('/:documentType/:documentId', async (req,res) => {
@@ -293,10 +413,12 @@ router.get('/:documentType/:documentId', async (req,res) => {
     for (let D in documentTypes) {
         D===req.params.documentType && (Document = documentTypes[D])
     };
+
     try {
         const doc = await Document.findById(req.params.documentId);
         res.render(`documents/${req.params.documentType}/show.ejs`, { doc })
     } catch (err) {
+        console.log(6.5)
         handleRouteError(req,res,err, 500)
     };
 })

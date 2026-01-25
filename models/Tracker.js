@@ -4,7 +4,7 @@ const { Expense, expenseSchema } = require('./Expense.js');
 
 //* DATA
 const trackerSchema = new mongoose.Schema({
-    name:{type:String, required:true, default:"untitled"},
+    name:{type:String, required:true},
     description:{type:String, required:false},
     status:{type:String, required:true, default:'ongoing'},
     created_at:{type:Number, required:true, default:Date.now()},
@@ -12,13 +12,13 @@ const trackerSchema = new mongoose.Schema({
     expenses:[{type:expenseSchema, required:true, default:[]}],
     members:[{
         type:mongoose.Schema.Types.ObjectId, 
-        ref:'userProfile',
+        ref:'UserProfile',
         required:true,
         default:[]
     }],
     owner:{
         type:mongoose.Schema.Types.ObjectId, 
-        ref:'userProfile',
+        ref:'UserProfile',
         required:true,
         default:[]
     },
@@ -30,25 +30,29 @@ const trackerSchema = new mongoose.Schema({
 
 //* MID
 // Create
-trackerSchema.pre('save', function() {
+trackerSchema.pre('validate', function() {
     if (!this.isNew) return;
     
-    const expenseId = new mongoose.Types.ObjectId();
+    // const expenseId = new mongoose.Types.ObjectId();
 
-    const _expenses = {};
-    for (let key in this) {
-        if (/expense/.test(key)) {
-            const pos = key.split('$')[0];
-            const k = key.split('$')[1];
-            const v = this[key];
-            _expenses[pos] = {[k]:v};
-        }
-    };
-    for (let exp in Object.values(_expenses)) {
-        new Expense({ ...exp, _id:expenseId, for:this._id, owner:this.owner })
-    };
 
-    this.created_at = Date.now();
+    // console.log("\nPRE SAVE middleware for Tracker", this);
+
+    // const _expenses = {};
+    // for (let key in this) {
+    //     if (/expense/.test(key)) {
+    //         console.log("PARSE NEW EXPENSE", key)
+    //         const pos = key.split('$')[0];
+    //         const k = key.split('$')[1];
+    //         const v = this[key];
+    //         _expenses[pos] = {[k]:v};
+    //     }
+    // };
+    // for (let exp of Object.values(_expenses)) {
+    //     new Expense({ ...exp, _id:expenseId, for:this._id, owner:this.owner })
+    // };
+
+    // this.created_at = Date.now();
     return;
 });
 

@@ -1,4 +1,5 @@
 <% let useUser; try {useUser = user} catch {useUser = false} %>
+<% let useMessage; try {useMessage = message} catch {useMessage = false} %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,6 +18,9 @@
                     <a href="/user/dashboard"><%= user?.profile?.displayname %></a>
                     <a href="/auth/logout">Log-out</a>
                 </div>
+                <% if (useMessage) { %>
+                    <h2><%= useMessage %></h2>
+                <% } %>
             <% } else { %>
                 <div class="nav-user">
                     <a class="auth-link" href="/auth/login">Log-in</a>
@@ -26,8 +30,5 @@
         </div>
     </div>
 </nav>
-
-    <h1>Welcome to the app</h1>
-
 </body>
 </html>

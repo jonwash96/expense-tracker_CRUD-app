@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 //* DATA
 const userProfileSchema = new mongoose.Schema({
-    username:{type:String, required:true, unique:true},
+    username:{type:String, required:true},
     displayname:{type:String, required:true},
     userID:{
         type:mongoose.Schema.Types.ObjectId,
@@ -20,7 +20,17 @@ const userProfileSchema = new mongoose.Schema({
         ref:'UserProfile',
         required:false
     }]
-})
+});
+
+const notificationSchema = new mongoose.Schema({
+    status:{type:String, required:true, default:'unseen'},
+    created_at:{type:Number, required:true, default:Date.now()},
+    bodyID:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Activity',
+        required:false,
+    }
+});
 
 const userSchema = new mongoose.Schema({
     created_at:{type:Number, required:true},
@@ -41,15 +51,7 @@ const userSchema = new mongoose.Schema({
         required:false,
         default:[]
     }],
-    notifications:[{
-        status:{type:String, required:true, default:'unseen'},
-        created_at:{type:Number, required:true, default:Date.now()},
-        bodyID:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:'Activity',
-            required:false,
-        }
-    }],
+    notifications:[{type:notificationSchema, required:false, default:[]}],
     trackers:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Tracker',
@@ -84,7 +86,6 @@ const userSchema = new mongoose.Schema({
 
 //* MID
 userSchema.pre('validate', function() {
-    console.log(this)
     if (!this.displayname) this.displayname = this.username;
     if (this.isNew) this.created_at = Date.now();
 })
@@ -92,6 +93,7 @@ userSchema.pre('validate', function() {
 //* MODEL
 const User = mongoose.model('User', userSchema);
 const UserProfile = mongoose.model('UserProfile', userProfileSchema);
+const Notification = mongoose.model('Notification', notificationSchema);
 
 //* IO
-module.exports = { User, UserProfile };
+module.exports = { User, UserProfile, Notification, notificationSchema };

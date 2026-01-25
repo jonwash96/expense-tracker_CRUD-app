@@ -8,40 +8,72 @@
 <main>
     <ul>
         <% for (let key of ['displayname', 'photo', 'friends']) { %>
-            <li>
                 <% console.log("PROFILE | -key:", key, "-type:", typeof user[key], "-object?", typeof user[key]==='object', "-value", user[key]) %>
             <% if (typeof user.profile[key]==='object' && !Array.isArray(user.profile[key])) { %>
-                <ul>
-                <% for (let foo in user.profile[key]) { const bar = user.profile[key][foo]; %>
-                    <li>
-                        <span><strong cameltotitle><%= foo %></strong>: </span>
-                        <% try {%><span><%=bar%></span><%} catch {%><%="Nah"%><%} %>
-                    </li>
-                </ul>
-                <% } %>
+                <li>
+                    <p><%= key %></p>
+                    <ul>
+                    <% for (let foo in user.profile[key]) { const bar = user.profile[key][foo]; %>
+                        <li>
+                            <span><strong cameltotitle><%= foo %>: </strong></span>
+                            <% try {%><span><%=bar%></span><%} catch {%><%="Nah"%><%} %>
+                        </li>
+                    <% } %>
+                    </ul>
+                </li>
             <% } else { %>
-                <p><strong cameltotitle><%= key %></strong></p>
-                <span arraytocsv><%= user[key] %></span>
+                <li>
+                    <span><strong cameltotitle><%= key %>: </strong></span>
+                    <span arraytocsv><%= user.profile[key] %></span>
+                </li>
             <% } %>
-            </li>
         <% } %>
         <% for (let key of ['username', 'activities', 'notifications', 'trackers', 'expenses', 'receipts', 'assignments', 'credits']) { %>
-            <li>
                 <% console.log("USER | -key:", key, "-type:", typeof user[key], "-object?", typeof user[key]==='object', "-value", user[key]) %>
             <% if (typeof user[key]==='object' && !Array.isArray(user[key])) { %>
-                <ul>
-                <% for (let foo in user[key]) { const bar = user[key][foo]; %>
-                    <li>
-                        <span><strong cameltotitle><%= foo %></strong>: </span>
-                        <% try {%><span><%=bar%></span><%} catch {%><%="Nah"%><%} %>
-                    </li>
-                </ul>
-                <% } %>
+                <li>
+                    <p><%= key %></p>
+                    <ul>
+                    <% for (let foo in user[key]) { const bar = user[key][foo]; %>
+                        <li>
+                            <span><strong cameltotitle><%= foo %>: </strong></span>
+                            <% try {%><span><%=bar%></span><%} catch {%><%="Nah"%><%} %>
+                        </li>
+                    <% } %>
+                    </ul>
+                </li>
+            <% } else if (Array.isArray(user[key])) { %>
+                <li>
+                    <p><%= key %></p>
+                    <ul>
+                    <% for (let val of user[key]) { %>
+                        <% if (typeof user[key]==='object' && !Array.isArray(user[key])) { %>
+                            <li>
+                                <p><%= key %></p>
+                                <ul>
+                                <% for (let foo in user[key]) { const bar = user[key][foo]; %>
+                                    <li>
+                                        <span><strong cameltotitle><%= foo %>: </strong></span>
+                                        <% try {%><span><%=bar%></span><%} catch {%><%="Nah"%><%} %>
+                                    </li>
+                                <% } %>
+                                </ul>
+                            </li>
+                        <% } else { %>
+                            <li>
+                                <span><strong cameltotitle><%= key %>: </strong></span>
+                                <span arraytocsv><%= user.profile[key] %></span>
+                            </li>
+                        <% } %>
+                    <% } %>
+                    </ul>
+                </li>
             <% } else { %>
-                <p><strong cameltotitle><%= key %></strong></p>
-                <span arraytocsv><%= user[key] %></span>
+                <li>
+                    <span><strong cameltotitle><%= key %>: </strong></span>
+                    <span arraytocsv><%= user.profile[key] %></span>
+                </li>
             <% } %>
-            </li>
         <% } %>
     </ul>
 </main>

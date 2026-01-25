@@ -30,9 +30,12 @@ router.get('/logout', (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const userInDB = await User.findOne({ username: req.body.username })
-            .select('+password')
-            .populate('activities notifications.bodyID, profile.photo');
-        if (!userInDB) { console.log("user not found")
+            .populate({path: 'notifications', populate:{path:'bodyID'}, options:{limit:50}})
+            .populate({path: 'profile', populate:{path: 'friends'}})
+            .populate({path: 'profile', populate:{path: 'photo'}})
+            .populate('activities')
+            .select('+password');
+        if (!userInDB) { console.log("@login | user not found")
             res.locals.message = "An incorect username was entered. Please Try Again"
             return res.render('auth/login.ejs');
         };
@@ -45,7 +48,7 @@ router.post('/login', async (req, res) => {
         };
     
         req.session.user = userInDB;
-        console.log(req.session.user)
+        console.log("@login |", req.session.user)
         req.session.save(() => res.redirect('/'));
     } catch (err) {
         handleRouteError(req,res,err, 500, ()=>res.status(500).render('auth/login.ejs'));
@@ -55,27 +58,28 @@ router.post('/login', async (req, res) => {
 router.post('/registration', async (req,res) => {
     try {
         const userInDB = await UserProfile.findOne({ username: req.body.username });
-        if (userInDB) {
+        if (userInDB) { 
+            console.log("@registration | USER EXISTS::", userInDB)
             res.locals.message = `A user with username ${req.body.username} already exist. Please choose another one.`;
-            return res.render('auth/register.ejs', req.body);
+            return res.render('auth/register.ejs');
         };
         if (req.body.password !== req.body.confirmPassword) {
             res.locals.message = "Passwords must match! Please check your passwords and try again";
             return res.render('auth/register.ejs', req.body);
         };
-    
+
         Object.values(req.body).forEach(field => {
             try {field = field.trim()}
             catch (err) {console.warn(err)};
         });
-    
+
         const hashedPassword = bcrypt.hashSync(req.body.password, 10);
         req.body.password = hashedPassword;
-    
+
         const userID = new mongoose.Types.ObjectId();
         const userprofileID = new mongoose.Types.ObjectId();
         const profilePhotoID = new mongoose.Types.ObjectId();
-    
+
         let newProfilePhoto = new WebLink({
             _id:profilePhotoID,
             title: "Profile Photo",
@@ -94,7 +98,7 @@ router.post('/registration', async (req,res) => {
             username: req.body.username,
             password: req.body.password,
         });
-    
+
         let welcomeNotification = new Activity({
             users: [newUser._id],
             category: 'notification',
@@ -107,20 +111,24 @@ router.post('/registration', async (req,res) => {
         welcomeNotification = await welcomeNotification.save();
         newUser.notifications.push({bodyID:welcomeNotification._id});
 
-        newUser = await newUser.save();
-        newUserProfile = await newUserProfile.save();
-        newProfilePhoto = await newProfilePhoto.save();
-    
-        req.session.user = await User.findById(newUser._id).populate('notifications profile');
-        req.session.message = `Welcome to The App, ${newUser.displayname}!<br>Check your notifications for next steps.`;
-    
+        try {
+            newUser = await newUser.save();
+            newUserProfile = await newUserProfile.save();
+            newProfilePhoto = await newProfilePhoto.save();
+        } catch (err) {
+            throw new Error(err)
+        }
+
+        req.session.user = await User.findById(newUser._id)
+            .populate({path: 'notifications', populate:{path:'bodyID'}, options:{limit:50}})
+            .populate({path: 'profile', populate:{path: 'friends'}})
+            .populate({path: 'profile', populate:{path: 'photo'}})
+            .populate('activities');
+        req.session.message = `Welcome to The App, ${req.session.user.profile.displayname}!\nCheck your notifications for next steps.`;
+
         req.session.save(() => res.redirect(`/`));
     } catch (err) {
-        if (err.message.includes("duplicate key")) {
-            res.locals.message = `A user with username ${req.body.username} already exist. Please choose another one.`;
-            return res.render('auth/register.ejs', req.body);
-        } 
-        else handleRouteError(req,res,err, 500, ()=>res.status(500).redirect('/auth/registration'));
+            handleRouteError(req,res,err, 500, ()=>res.status(500).redirect('/auth/registration'));
     }
 });
 

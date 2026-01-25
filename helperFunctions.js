@@ -2,7 +2,7 @@ function handleRouteError(req,res,err, code, callback, message) {
     console.error(err);
     message = message || `An Internal Server Error Has occured! (code: ${code})\nPlease try your request again later.\n`;
     req.session.message = message;
-    callback() || res.send(`${message}\n${err}`)
+    callback ? callback() : res.send(`${message}\n${err}`)
 }
 
 function hydrateTrackerTotals(self) {

@@ -2,16 +2,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <%- include('../partials/head.ejs', { title:tracker.title, style:['dashboard'] }) %>
+    <%- include('../../partials/head.ejs', { title:tracker.name, style:['dashboard'] }) %>
 </head>
 <body>
-    <%- include('../partials/headbar.ejs', { title:tracker.title, subtitle:"Spending Tracker" }) %>
+    <%- include('../../partials/headbar.ejs', { title:tracker.name, subtitle:"Spending Tracker" }) %>
 
     <section id="details">
         <div class="inner-wrapper">
             <button type="button"><img height="10px" src="/svg/ellipsis.svg"></button>
             <ul class="context-menu">
-                <% if (user.profile._id===tracker.owner._id) { %>
+                <% if (user.profile._id==tracker.owner._id) { %>
                     <a href="/documents/Tracker/<%= tracker._id %>/edit">
                         <li>Edit</li>
                     </a>
@@ -52,7 +52,7 @@
     <section id="tracker-summary">
         <div class="card Tracker">
             <header>
-                <div class="title"><%= t.name %></div>
+                <div class="title"><%= tracker.name %></div>
             </header>
             <div class="money-sign">$</div>
             <div class="amount">
@@ -180,7 +180,7 @@
                 
                 <div class="items">
                     <div class="inner-wrapper">
-                        <% expense.items.map(item => {
+                        <% expense.items.map(item => { %>
                             <div class="chip">
                                 <div class="img"><p><span>$</span><%= item.amount %></p></div>
                                 <span><%= item.name %></span>
@@ -189,10 +189,10 @@
                     </div>
                     <div class="more"><%= expense.items.length %> Total</div>
                 </div>
-            <% } %>
+            <% }) %>
         </div>
     </section>
 
-    <%- include('../partials/navbar.ejs') %>
+    <%- include('../../partials/navbar.ejs') %>
 </body>
 </html>
