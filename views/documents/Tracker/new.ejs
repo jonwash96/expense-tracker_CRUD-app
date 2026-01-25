@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../../partials/head.ejs', { title:"New Tracker", style:['dashboard'] }) %>
+</head>
+<body>
+<%- include('../../partials/headbar.ejs', { title:"New Tracker" }) %>
+<main>
+    <section id="page-nav">
+        <button type="button">🔙 Back</button>
+    </section>
+
+    <section id="content">
+        <legend>Tracker Info</legend>
+        <form action="/documents/Tracker" method="POST">
+            <button type="submit">Save</button>
+            <label for="title">Title</label>
+            <input id="title" name="title" type="text" required>
+            
+            <label for="description">Description</label>
+            <input id="description" name="description" type="text">
+            
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="ongoing">Ongoing</option>
+                <option value="forthcoming">Forthcoming</option>
+                <option value="complete">Complete</option>
+                <option value="repayment">Repayment</option>
+                <option value="funding">Funding</option>
+            </select>
+
+
+            <label for="members-input">Members</label>
+            <input id="members-input" type="search" list="friends">
+            <button type="button" id="add-friend-btn">Add</button>
+            <datalist id="friends">
+                <% user.profile.friends?.map(friend => { %>
+                    <option data-uid="<%= friend._id %>">
+                        <%= friend.displayname %>
+                    </option>
+                    <option data-uid="<%= friend._id %>">
+                        <%= friend.username %>
+                    </option>
+                <% }) %>
+            </datalist>
+            <ul id="members-added">
+            </ul>
+
+            <fieldset id="expense1" class="expense">
+                <legend>Expense1</legend>
+                <label for="expense1$name">Name</label>
+                <input id="expense1$name" name="expense1$name" type="text" required>
+
+                <label for="expense1$description">Description</label>
+                <input id="expense1$description" name="expense1$description" type="text">
+
+                <label for="expense1$status">Status</label>
+                <select id="expense1$status" name="expense1$status">
+                    <option value="ongoing">Ongoing</option>
+                    <option value="forthcoming">Forthcoming</option>
+                    <option value="complete">Complete</option>
+                    <option value="complete">Gift/Donation</option>
+                    <option value="repayment">Repayment</option>
+                    <option value="funding">Funding</option>
+                </select>
+                
+                <h5>Expense Items</h5>
+                <fieldset id="expense1$item1">
+                    <legend>Item1</legend>
+                    <div id="expense1$items" class="list-wrapper">
+                        <div class="item" id="expense1$item1">
+                            <label for="expense1$item1_name">Name</label>
+                            <input id="expense1$item1_name" name="expense1$item1_name" type="text">
+                            <label for="expense1$item1_description">Description</label>
+                            <input id="expense1$item1_description" name="expense1$item1_description" type="paragraph">
+                            <label for="expense1$item1_amount">Amount</label>
+                            <input id="expense1$item1_amount" name="expense1$item1_amount" type="number">
+                            <label for="expense1$item1_assignees">Assignees</label>
+                            <input id="expense1$item1_assignees" type="search" list="expense1$item1_friends">
+                            <button type="button" id="add-friend-btn">Add</button>
+                            <datalist id="expense1$item1_friends">
+                                <option id="123456789" value="John Smith">
+                                </option>
+                                <option id="987654321" value="Andrei Verakovski">
+                                </option>
+                            </datalist>
+                            <ul id="members-added">
+                            </ul>
+                            <div id="expense1$item1_photos" class="list-wrapper">
+                                <h5>Photos</h5>
+                                <div class="item_photo" id="expense1$item1_photo1">
+                                    <label for="expense1$item1_photo1%name">Title</label>
+                                    <input id="expense1$item1_photo1%name" name="expense1$item1_photo1_name" type="text">
+                                    <label for="expense1$item1_photo1%description">Description</label>
+                                    <input id="expense1$item1_photo1%description" name="expense1$item1_photo1_description" type="paragraph">
+                                    <label for="expense1$item1_photo1%url">URL</label>
+                                    <input id="expense1$item1_photo1%url" name="expense1$item1_photo1_url" type="url">
+                                    <button class="remove-field" data-id="expense1$item1_photo1" type="button">Remove Photo</button>
+                                </div>
+                            </div>
+                            <button class="add-field" data-path="expense$photo" type="button">Add Photo</button>
+                        </div>
+                    
+                    </div>
+                </fieldset>
+                <button class="add-field" data-path="expense$item" type="button">Add Item</button>
+                <button class="remove-field" data-id="expense1$item1" type="button">Remove Item</button>
+
+                <div id="expense1$receipts" class="list-wrapper">
+                    <h5>Receipt Photos</h5>
+                    <div class="receipt" id="expense1$receipt1">
+                        <label for="expense1$receipt1_name">Title</label>
+                        <input id="expense1$receipt1_name" name="expense1$receipt1_name" type="text">
+                        <label for="expense1$receipt1_description">Description</label>
+                        <input id="expense1$receipt1_description" name="expense1$receipt1_description" type="paragraph">
+                        <label for="expense1$receipt1_url">URL</label>
+                        <input id="expense1$receipt1_url" name="expense1$receipt1_url" type="url">
+                        <button class="remove-field" data-id="expense1$receipt1" type="button">Remove Receipt</button>
+                    </div>
+                    <div class="receipt" id="expense1$receipt2">
+                        <label for="expense1$receipt2_name">Title</label>
+                        <input id="expense1$receipt2_name" name="expense1$receipt2_name" type="text">
+                        <label for="expense1$receipt2_description">Description</label>
+                        <input id="expense1$receipt2_description" name="expense1$receipt2_description" type="paragraph">
+                        <label for="expense1$receipt1_url">URL</label>
+                        <input id="expense1$receipt1_url" name="expense1$receipt2_url" type="url">
+                        <button class="remove-field" data-id="expense1$receipt2" type="button">Remove Receipt</button>
+                    </div>
+                </div>
+                <button id="expense1$receipt-add-btn" class="add-field" data-path="expense$receipt" type="button">Add Receipt</button>
+
+                <div id="expense1$webLinks" class="list-wrapper">
+                    <h5>Web links</h5>
+                    <div class="webLink" id="expense1$webLink1">
+                        <label for="expense1$webLink1_name">Title</label>
+                        <input id="expense1$webLink1_name" name="expense1$webLink1_name" type="text">
+                        <label for="expense1$webLink1_description">Description</label>
+                        <input id="expense1$webLink1_description" name="expense1$webLink1_description" type="paragraph">
+                        <label for="expense1$webLink1_url">URL</label>
+                        <input id="expense1$webLink1_url" name="expense1$webLink1_url" type="url">
+                        <button class="remove-field" data-id="expense1$webLink1" type="button">Remove Web Link</button>
+                    </div>
+                    <div class="webLink" id="expense1$webLink2">
+                        <label for="expense1$webLink2_name">Title</label>
+                        <input id="expense1$webLink2_name" name="expense1$webLink2_name" type="text">
+                        <label for="expense1$webLink2_description">Description</label>
+                        <input id="expense1$webLink2_description" name="expense1$webLink2_description" type="paragraph">
+                        <label for="expense1$webLink1_url">URL</label>
+                        <input id="expense1$webLink1_url" name="expense1$webLink2_url" type="url">
+                        <button class="remove-field" data-id="expense1$webLink2" type="button">Remove Web Link</button>
+                    </div>
+                </div>
+                <button id="expense1$webLink-add-btn" class="add-field" data-path="expense$webLink" type="button">Add Web Link</button>
+
+                <div id="expense1$photos" class="list-wrapper">
+                    <h5>Photos</h5>
+                    <div class="photo" id="expense1$photo1">
+                        <label for="expense1$photo1_name">Title</label>
+                        <input id="expense1$photo1_name" name="expense1$photo1_name" type="text">
+                        <label for="expense1$photo1_description">Description</label>
+                        <input id="expense1$photo1_description" name="expense1$photo1_description" type="paragraph">
+                        <label for="expense1$photo1_url">URL</label>
+                        <input id="expense1$photo1_url" name="expense1$photo1_url" type="url">
+                        <button class="remove-field" data-id="expense1$photo1" type="button">Remove Photo</button>
+                    </div>
+                    <div class="photo" id="expense1$photo2">
+                        <label for="expense1$photo2_name">Title</label>
+                        <input id="expense1$photo2_name" name="expense1$photo2_name" type="text">
+                        <label for="expense1$photo2_description">Description</label>
+                        <input id="expense1$photo2_description" name="expense1$photo2_description" type="paragraph">
+                        <label for="expense1$photo1_url">URL</label>
+                        <input id="expense1$photo1_url" name="expense1$photo2_url" type="url">
+                        <button class="remove-field" data-id="expense1$photo2" type="button">Remove Photo</button>
+                    </div>
+                </div>
+                <button id="expense1$photo-add-btn" class="add-field" data-path="expense$photo" type="button">Add Photo</button>
+            </fieldset>
+            <button type="submit">Save</button>
+        </form>
+    </section>
+</main>
+<%- include('../../partials/navbar.ejs') %>
+
+<script id="handle-add-members" type="text/javascript">
+    const addFriend = document.getElementById('add-friend-btn');
+    const membersInput = document.getElementById('members-input');
+    const dataList = document.getElementById('friends');
+    const membersList = document.querySelectorAll('#friends option');
+    const membersAdded = document.getElementById('members-added');
+    const friends = {};
+    const getFriends = membersList.forEach(el => friends[el.value] = el.id);
+    const members = [];
+    const addedOptions = [];
+
+    addFriend.addEventListener('click', (e) => {
+        if (Object.keys(friends).includes(membersInput.value)) {
+            members.push(friends[membersInput.value])
+            const value = new String(friends[membersInput.value]);
+            addedOptions.push(document.getElementById(value).cloneNode(true));
+            document.getElementById(value).remove();
+            membersInput.style.border = '1px solid grey';
+            membersInput.style.borderRadius = '3px';
+            
+            const li = document.createElement('li');
+                li.classList.add(value);
+            const text = document.createTextNode(membersInput.value);
+                li.appendChild(text);
+            const invisible = document.createElement('input');
+                invisible.type = 'hidden';
+                invisible.name = 'members';
+                invisible.value = Number(value);
+                li.appendChild(invisible);
+            const remove = document.createElement('button');
+                remove.textContent = "❌";
+                remove.classList.add('list-remove-btn');
+                remove.addEventListener('click', (e) => {
+                    document.getElementsByClassName(value)[0].remove();
+                    members.splice(members.find(m=>m===value),1);
+                    const nodeIdx = addedOptions.findIndex(n=>n.id==value);
+                    dataList.appendChild(addedOptions[nodeIdx]);
+                    addedOptions.splice(nodeIdx,1);
+                });
+                li.appendChild(remove);
+            membersAdded.appendChild(li);
+
+            console.log(addedOptions)
+
+            membersInput.value = '';
+        } else {
+            membersInput.style.border = '1px solid red';
+        }
+    })
+</script>
+<script id="handle-add-additional-fields" type="text/javascript">
+    const expense1ReceiptInputs = document.querySelectorAll('#expense1 .receipt input[type=text], #expense1 .receipt input[type=url]');
+    const expense1WebLinkInputs = document.querySelectorAll('#expense1 .webLink input[type=text], #expense1 .webLink input[type=url]');
+    const expense1PhotoInputs = document.querySelectorAll('#expense1 .photo input[type=text], #expense1 .photo input[type=url]');
+
+    const expense1ReceiptAddBtn = document.getElementById('expense1$receipt-add-btn');
+    const expense1WebLinkAddBtn = document.getElementById('expense1$webLink-add-btn');
+    const expense1PhotoAddBtn = document.getElementById('expense1$photo-add-btn');
+
+    for (let type of [
+        [expense1ReceiptInputs, 'receipt', 'Receipt'],
+        [expense1WebLinkInputs, 'webLink', 'Web Link'], 
+        [expense1PhotoInputs, 'photo', 'Photo'],
+    ]) { type[0].forEach(input => {
+            input.addEventListener('blur', (e) => {
+                if (Array.from(type[0]).every(i=>i.value!=='')) appendNewWebLink('expense1', type);
+        }) });
+    };
+
+    for (let btn of [
+        [expense1ReceiptAddBtn, [expense1ReceiptInputs, 'receipt', 'Receipt']], 
+        [expense1WebLinkAddBtn, [expense1WebLinkInputs, 'webLink', 'Web Link']], 
+        [expense1PhotoAddBtn, [expense1PhotoInputs, 'photo', 'Photo']]
+    ]) { btn[0].addEventListener('click', (e) => {
+            appendNewWebLink('expense1', btn[1]);
+        })
+    }
+
+    function appendNewWebLink(fieldsetID, [self, fieldType, displayName]) {
+        const count = document.querySelectorAll(`div.${fieldType}`).length+1;
+        const newWebLinkBlock = document.createElement('div');
+            newWebLinkBlock.classList.add(fieldType);
+            newWebLinkBlock.id = `${fieldsetID}$${fieldType}${count}`;
+
+            newWebLinkBlock.innerHTML 
+            = `<label for="${fieldsetID}$${fieldType}${count}_name">Title</label>
+               <input id="${fieldsetID}$${fieldType}${count}_name" name="${fieldsetID}$${fieldType}${count}_name" type="text">
+               <label for="${fieldsetID}$${fieldType}${count}_description">Description</label>
+               <input id="${fieldsetID}$${fieldType}${count}_description" name="${fieldsetID}$${fieldType}${count}_description" type="paragraph">
+               <label for="${fieldsetID}$${fieldType}${count}_url">URL</label>
+               <input id="${fieldsetID}$${fieldType}${count}_url" name="${fieldsetID}$${fieldType}${count}_url" type="url">
+               <button class="remove-field" data-id="${fieldsetID}$${fieldType}${count}" type="button">Remove ${displayName}</button>`
+
+        document.querySelector(`#${fieldsetID} #${fieldsetID}\\$${fieldType}s`).appendChild(newWebLinkBlock);
+        document.querySelectorAll(`#${fieldsetID}\\$${fieldType}${count} input[type=text], #${fieldsetID}\\$${fieldType}${count} input[type=url]`)
+            .forEach(input => {
+                input.addEventListener('blur', (e) => {
+                    if (Array.from(document.querySelectorAll(`#${fieldsetID} .${fieldType} input[type=text], #${fieldsetID} .${fieldType} input[type=url]`))
+                        .every(i=>i.value!=='')) appendNewWebLink(fieldsetID, [self, fieldType, displayName]);
+                }) });
+    }
+
+    function removeWebLink(webLinkID) {
+        document.getElementById(webLinkID).remove();
+        // Map over all web link elements in the fieldset
+        // If the wlCt is > the deleted one, replace it with that number -1
+    }
+</script>
+</body>
+</html>

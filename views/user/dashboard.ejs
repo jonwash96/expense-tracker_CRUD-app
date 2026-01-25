@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head.ejs', { title:"Dashboard", style:['dashboard'] }) %>
+</head>
+<body>
+    <%- include('../partials/headbar.ejs', { title:"Dashboard" }) %>
+<main>
+    <section id="trackers">
+        <div class="inner-wrapper slider-container">
+            <% user.trackers.map(t => { %>
+                <a href="/documents/Tracker/<%= t._id %>">
+                    <div class="card tracker">
+                        <div class="title"><%= t.name %></div>
+                        <div class="money-sign">$</div>
+                        <div class="amount">
+                            <span><%= t.totals.credits_calculated %></span> / 
+                            <span>$<%= t.totals.expenses_calculated %></span>
+                        </div>
+                        <div class="members">
+                            <% for (let i=0; i<2; i++) { if (!t.members[i]) break; %>
+                                <div class="chip">
+                                    <img src="<%= t.members[i].photo %>">
+                                    <span><%= t.members[i].displayname %></span>
+                                </div>
+                            <% } %>
+                            <span>+ <%= t.members.length - 2 %> more</span>
+                        </div>
+                    </div>
+                </a>
+             <% }) %>
+        </div>
+    </section>
+
+    <section id="recents">
+        <h3>Recents</h3>
+        <div class="inner-wrapper slider-container">
+            <% for (let i=0; i<50; i++) { if (!user.activities[i]) break; %>
+                <a href="<%= user.activities[i].data?.link ? user.activities[i].data.link : '#' %>">
+                    <div class="card recent">
+                        <h5><%= user.activities[i].title %></h5>
+                        <span><%= new Date(user.activities[i].created_at).toDateString() %></span>
+                    </div>
+                </a>
+            <% } %>
+        </div>
+    </section>
+
+    <section id="user-summary">
+        <figure class="card summary">
+            <div class="pie-chart"
+            data-margin="<%= Math.abs(user.totals.margin) %>" 
+            data-color="<%= user.totals.margin>0 ? '#f66' : '#0f0 '%> ">
+                <p class="text-content"><%= user.totals.margin %></p>
+            </div>
+            <h3>User Summary</h3>
+            <figcaption>
+                <span class="assignments"><%= user.totals.assignments %></span>
+                <span class="credits"><%= user.totals.credits %></span>
+            </figcaption>
+        </figure>
+    </section>
+</main>
+    <%- include('../partials/navbar.ejs') %>
+</body>
+</html>

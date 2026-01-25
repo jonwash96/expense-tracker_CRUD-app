@@ -1,0 +1,198 @@
+<% String.prototype.ellipsis = function(length) {return this.length > length ? this.substring(0,length)+"..." : this} %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head.ejs', { title:tracker.title, style:['dashboard'] }) %>
+</head>
+<body>
+    <%- include('../partials/headbar.ejs', { title:tracker.title, subtitle:"Spending Tracker" }) %>
+
+    <section id="details">
+        <div class="inner-wrapper">
+            <button type="button"><img height="10px" src="/svg/ellipsis.svg"></button>
+            <ul class="context-menu">
+                <% if (user.profile._id===tracker.owner._id) { %>
+                    <a href="/documents/Tracker/<%= tracker._id %>/edit">
+                        <li>Edit</li>
+                    </a>
+                    <form action="/documents/<%= tracker._id %>?_method=DELETE" method="POST">
+                        <li onclick="submit()">Delete</li>
+                    </form>
+                    <li>Members</li>
+                <% } %>
+                <form action="/documents/<%= tracker._id %>/duplicate?_method=PUT" method="POST">
+                    <li onclick="submit()">Duplicate</li>
+                </form>
+                <a href="/documents/Tracker/<%= tracker._id %>/share">
+                    <li>Share</li>
+                </a>
+            </ul>
+            <% if (tracker.description) { %>
+                <% if (tracker.description.length > 128) { %>
+                    <span class="description"><%= tracker.description.substring(0,128) + "..." %></span>
+                <% } else { %>
+                    <span class="description"><%= tracker.description %></span>
+                <% } %>
+            <% } else { %>
+                <a href="/documents/Tracker/<%= tracker._id %>/edit"><em>Add Description</em></a> 
+            <% } %>
+            <div class="chips">
+                <div class="chip">
+                    <div class="img">🕦</div>
+                    <span><%= new Date(tracker.created_at).toDateString() %></span>
+                </div>
+                <div class="chip">
+                    <div class="img">⏱️</div>
+                    <span><%= new Date(tracker.updated_at).toDateString() %></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tracker-summary">
+        <div class="card Tracker">
+            <header>
+                <div class="title"><%= t.name %></div>
+            </header>
+            <div class="money-sign">$</div>
+            <div class="amount">
+                <span><%= tracker.totals.credits_calculated %></span> / 
+                <span>$<%= tracker.totals.expenses_calculated %></span>
+            </div>
+        </div>
+    </section>
+
+    <section id="recents">
+        <div class="title-block">
+            <h3>Recents</h3>
+            <a href="/documents/Tracker/<%= tracker._id %>/expenses">
+                <button class="type3">View All</button>
+            </a>
+        </div>
+        <div class="inner-wrapper slider-container">
+            <% for (let i=0; i<5; i++) { if (!tracker.recents[i]) break; %>
+                <a href="/documents/Expense/<%= tracker.recents[i]._id %>">
+                    <div class="card Item">
+                        <header>
+                            <div class="right">
+                                <div class="amount">
+                                    <span><%= tracker.recents[i].amount %></span> / 
+                                    <span>$<%= tracker.recents[i].credits_total %></span>
+                                </div>
+                                <button type="button"><img height="10px" src="/svg/ellipsis.svg"></button>
+                                <ul class="context-menu">
+                                    <% if (user.profile._id===tracker.owner._id) { %>
+                                        <a href="/documents/Item/<%= tracker._id %>/edit">
+                                            <li>Edit</li>
+                                        </a>
+                                        <form action="/documents/<%= tracker._id %>?_method=DELETE" method="POST">
+                                            <li onclick="submit()">Delete</li>
+                                        </form>
+                                    <% } %>
+                                    <form action="/documents/<%= tracker._id %>/duplicate?_method=PUT" method="POST">
+                                        <li onclick="submit()">Duplicate</li>
+                                    </form>
+                                    <a href="/documents/Tracker/<%= tracker._id %>/share">
+                                        <li>Share</li>
+                                    </a>
+                                </ul>
+                            </div>
+
+                            <h4><%= tracker.recents[i].name %></h4>
+                        </header>
+
+                        <div class="chips">
+                            <div class="chip">
+                                <div class="img">⏱️</div>
+                                <span><%= new Date(tracker.recents[i].updated_at).toDateString() %></span>
+                            </div>
+                        </div>
+                        <% if (tracker.recents[i].description) { %>
+                            <% if (tracker.recents[i].description.length > 80) { %>
+                                <span class="description"><%= tracker.recents[i].description.substring(0,80) + "..." %></span>
+                            <% } else { %>
+                                <span class="description"><%= tracker.recents[i].description %></span>
+                            <% } %>
+                        <% } %>
+
+                        <div class="assignees">
+                            <% tracker.recents[i].assignees.map(assignment => { %>
+                                <div class="bullet-wrapper">
+                                    <header>
+                                        <p><%= assignment.userID.displayname %></p>
+                                        <div class="amount">
+                                            <span><%= assignment.credits.reduce((a,b) => a.amount += b.amount, 0) %></span> / 
+                                            <span>$<%= assignemnt.amount %></span>
+                                        </div>
+                                    </header>
+                                    <div id="profile-photo">
+                                        <img src="<%= assignment.userID.photo %>" alt="<%= assignment.userID.username %> profile photo">
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+
+                    </div>
+                </a>
+            <% } %>
+        </div>
+    </section>
+
+    <section id="Expenses">
+        <div class="inner-wrapper">
+            <% tracker.expenses.map( expense => { %>
+                <figure id="<%= expense.name.replace(' ', '_') %>" class="card expense-summary">
+                    <div class="pie-chart"
+                    data-margin="<%= Math.abs(expense.totals.margin) %>" 
+                    data-color="<%= expense.totals.margin>0 ? '#f66' : '#0f0 '%> ">
+                        <p class="text-content"><%= expense.totals.margin %></p>
+                    </div>
+                    <h3>User Summary</h3>
+                    <figcaption>
+                        <span class="assignments"><%= expense.totals.items_calculated %></span>
+                        <span class="credits"><%= expense.totals.credits_calculated %></span>
+                    </figcaption>
+                </figure>
+
+                <header>
+                    <div class="right">
+                        <button type="button"><img height="10px" src="/svg/ellipsis.svg"></button>
+                        <ul class="context-menu">
+                            <% if (user.profile._id===tracker.owner._id) { %>
+                                <a href="/documents/Expense/<%= expense._id %>/edit">
+                                    <li>Edit</li>
+                                </a>
+                                <form action="/documents/<%= expense._id %>?_method=DELETE" method="POST">
+                                    <li onclick="submit()">Delete</li>
+                                </form>
+                            <% } %>
+                            <form action="/documents/<%= expense._id %>/duplicate?_method=PUT" method="POST">
+                                <li onclick="submit()">Duplicate</li>
+                            </form>
+                            <a href="/documents/Expense/<%= expense._id %>/share">
+                                <li>Share</li>
+                            </a>
+                        </ul>
+                    </div>
+
+                    <h4><%= expense.name %></h4>
+                </header>
+                
+                <div class="items">
+                    <div class="inner-wrapper">
+                        <% expense.items.map(item => {
+                            <div class="chip">
+                                <div class="img"><p><span>$</span><%= item.amount %></p></div>
+                                <span><%= item.name %></span>
+                            </div>
+                        <% }) %>
+                    </div>
+                    <div class="more"><%= expense.items.length %> Total</div>
+                </div>
+            <% } %>
+        </div>
+    </section>
+
+    <%- include('../partials/navbar.ejs') %>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<% let useMessage; try {useMessage = message} catch {useMessage = false} %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head.ejs', { title: "Login" }) %>
+</head>
+<body>
+    <nav>
+        <ul>
+            <a href="/">Home</a>
+            <a href="/auth/registration">Sign-up</a>
+        </ul>
+    </nav>
+        <div class="signin-container">
+            <h1>Sign Into Your Account</h1>
+            <% if (useMessage) { %> <p><%= useMessage %></p> <% } %>
+            <form action="/auth/login" method="POST">
+                <label for="username">Username:</label>
+                <input type="text" name="username" id="username" />
+
+                <label for="password">Password:</label>
+                <input type="password" name="password" id="password" />
+
+                <button type="submit">Login</button>
+            </form>
+        </div>
+</body>
+</html>

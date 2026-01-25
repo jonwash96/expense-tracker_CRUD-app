@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head', { title:user.name, stylesheets:['profile'] }) %>
+</head>
+<body>
+<%- include('../partials/headbar.ejs', { title:user.name }) %>
+<main>
+    <ul>
+        <% for (let key of ['displayname', 'photo', 'friends']) { %>
+            <li>
+                <% console.log("PROFILE | -key:", key, "-type:", typeof user[key], "-object?", typeof user[key]==='object', "-value", user[key]) %>
+            <% if (typeof user.profile[key]==='object' && !Array.isArray(user.profile[key])) { %>
+                <ul>
+                <% for (let foo in user.profile[key]) { const bar = user.profile[key][foo]; %>
+                    <li>
+                        <span><strong cameltotitle><%= foo %></strong>: </span>
+                        <% try {%><span><%=bar%></span><%} catch {%><%="Nah"%><%} %>
+                    </li>
+                </ul>
+                <% } %>
+            <% } else { %>
+                <p><strong cameltotitle><%= key %></strong></p>
+                <span arraytocsv><%= user[key] %></span>
+            <% } %>
+            </li>
+        <% } %>
+        <% for (let key of ['username', 'activities', 'notifications', 'trackers', 'expenses', 'receipts', 'assignments', 'credits']) { %>
+            <li>
+                <% console.log("USER | -key:", key, "-type:", typeof user[key], "-object?", typeof user[key]==='object', "-value", user[key]) %>
+            <% if (typeof user[key]==='object' && !Array.isArray(user[key])) { %>
+                <ul>
+                <% for (let foo in user[key]) { const bar = user[key][foo]; %>
+                    <li>
+                        <span><strong cameltotitle><%= foo %></strong>: </span>
+                        <% try {%><span><%=bar%></span><%} catch {%><%="Nah"%><%} %>
+                    </li>
+                </ul>
+                <% } %>
+            <% } else { %>
+                <p><strong cameltotitle><%= key %></strong></p>
+                <span arraytocsv><%= user[key] %></span>
+            <% } %>
+            </li>
+        <% } %>
+    </ul>
+</main>
+<%- include('../partials/navbar.ejs') %>
+</body>
+</html>

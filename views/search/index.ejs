@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<%- include('../partials/head.ejs', { title:"Search", style:[] }) %>
+</head>
+<body>
+<%- include('../partials/headbar.ejs', { title:"Dashboard" }) %>
+<main>
+    <section id="searchbox-block">
+        <label for="searchbox">🔍</label>
+        <input id="searchbox" type="search" placeholder="search">
+    </section>
+
+    <section id="search-results">
+    </section>
+</main>
+<%- include('../partials/navbar.ejs') %>
+</body>
+</html>

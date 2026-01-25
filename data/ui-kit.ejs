@@ -1,0 +1,26 @@
+<%- include('../partials/head.ejs', { title:"Dashboard", style:['dashboard'] }) %>
+<%- include('../partials/headbar.ejs', { title:"Dashboard" }) %>
+<%- include('../partials/navbar.ejs') %>
+
+<% let useMessage; try {useMessage = message} catch {useMessage = false} %>
+
+<div class="chip">
+    <img class="img" src="<%= /noimg.svg %>">
+    <span><%= blank %></span>
+</div>
+
+<a href="location<%= variable %>"><em>Text</em></a>
+
+<%= new Date(user.activities[i].created_at).toDateString() %>
+
+<img height="10px" src="/svg/ellipsis.svg">
+
+<% if (condition) { %>
+    <% if (condition) { %>
+        <span><%= content %></span>
+    <% } else { %>
+        <span><%= otherContent %></span>
+    <% } %>
+<% } else { %>
+    <a href="/documents/Tracker/<%= tracker._id %>"><em>Add Description</em></a> 
+<% } %>

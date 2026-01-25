@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head.ejs', { title:data.name, style:['viewer'] }) %>
+</head>
+<body>
+<%- include('../partials/headbar.ejs', { title:"data.name" }) %>
+<main>
+    <section id="page-nav">
+        <button type="button">🔙 Back</button>
+    </section>
+
+    <section id="content">
+        <header>
+            <div class="right">
+                <button type="button"><img height="10px" src="/svg/ellipsis.svg"></button>
+                <ul class="context-menu">
+                    <% if (user.profile._id===tracker.owner._id) { %>
+                        <a href="/documents/Tracker/<%= tracker._id %>/edit">
+                            <li>Edit</li>
+                        </a>
+                        <form action="/documents/<%= tracker._id %>?_method=DELETE" method="POST">
+                            <li onclick="submit()">Delete</li>
+                        </form>
+                        <% if (docType==='Item') { %>
+                            <li>Assignees</li>
+                        <% } %>
+                    <% } %>
+                    <form action="/documents/<%= tracker._id %>/duplicate?_method=PUT" method="POST">
+                        <li onclick="submit()">Duplicate</li>
+                    </form>
+                    <a href="/documents/Tracker/<%= tracker._id %>/share">
+                        <li>Share</li>
+                    </a>
+                </ul>
+            </div>
+
+            <h3><%= data.name %></h3>
+        </header>
+
+        <article>
+            <% for (let key in data) { const datum = data[key]; %>
+                <% if (typeof datum==='string') { %>
+                    <div id="<%= key %>">
+                        <h4 cameltotitle><%= key %></h4>
+                        <p><%= datum %></p>
+                    </div>
+                <% } else if (Array.isArray(datum)) { %>
+                    <div id="<%= key %>">
+                        <h4 cameltotitle><%= key %></h4>
+                        <ul>
+                            <% datum.map(i => { %>
+                                <% if (/\/.+\/.+/.test(i)) { %>
+                                    <li><img src="<%= i %>"></li>
+                                <% } else { %>
+                                    <li><%= i %></li>
+                                <% } %>
+                            <% }) %>    
+                        </ul>
+                    </div>
+                <% } %>
+            <% } %>
+        </article>
+    </section>
+</main>
+<%- include('../partials/navbar.ejs') %>
+</body>
+</html>

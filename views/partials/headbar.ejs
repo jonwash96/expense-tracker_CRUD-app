@@ -1,0 +1,45 @@
+<% let useTitle; try {useTitle = title} catch {useTitle = "Tracker App"} %>
+<% let useSubTitle; try {useSubTitle = subtitle} catch {useSubTitle = ""} %>
+<% let useMessage; try {useMessage = message} catch {useMessage = false} %>
+<div id="headbar">
+    <div class="inner-wrapper">
+        <div class="notifications-wrapper">
+            <a href="/user/notifications/?returnTo=${returnTo}">
+                <button id="notifications" 
+                type="button" 
+                data="<%= user.notifications.filter(n => n.status==='unseen').length %>">
+                🔔</button>
+            </a>
+        </div>
+
+        <div class="bullet-wrapper">
+            <a href="/user/dashboard">
+                <header>
+                    <h2><%= useSubTitle %></h2>
+                    <h1><%= useTitle %></h1>
+                </header>
+            </a>
+            <div id="profile-photo" class="profile-photo">
+                <a href="/user">
+                    <img src="<%= user.profile.photo.url %>" alt="<%= user.profile.displayname %> profile photo">
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<% if (useMessage) %>
+<div id="session-message">
+    <p><%= useMessage %></p>
+</div>
+
+<script defer type="text/javascript">
+    const variables = {
+        returnTo: window.location.href,
+    }
+    document.body.textContent.match(/\$\{.+\}/g)?.forEach(match => {
+        const variable = match.match(/(?<=\$\{).+(?=\})/g);
+        match.replace(/.+/, variables[variable])
+    })
+</script>
