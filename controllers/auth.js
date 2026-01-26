@@ -48,10 +48,11 @@ router.post('/login', async (req, res) => {
         };
     
         req.session.user = userInDB;
+        req.session.message = `Welcome, ${req.session.user.profile.displayname}!`
         console.log("@login |", req.session.user)
         req.session.save(() => res.redirect('/'));
     } catch (err) {
-        handleRouteError(req,res,err, 500, ()=>res.status(500).render('auth/login.ejs'));
+        handleRouteError(req,res,err, 500, ()=>res.status(500).render('user/profile.ejs'));
     }
 });
 

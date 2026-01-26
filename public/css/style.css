@@ -12,18 +12,38 @@
     --dcyan:#0d9fbc;
     --mint:#48996a;
     --dmint:hsl(193, 41%, 22%);
+    --sdblue:hsl(192, 41%, 16%);
 }
 
-.hide {display:none;}
-.show {display:inherit;}
+.hide {display:none;opacity:0;}
+.show {display:inherit;opacity:1;transition: opacity 2000ms}
+.center {text-align:center;justify-content:center}
+.flex-row {display:flex;gap:1em;}
 
 body {
     background-color:var(--dmint);
     color:white;
     margin:0 auto;
+    max-width:860px;
+    min-height: 100vh;
 }
 
 main {margin:0 10px;}
+
+label, input {
+    display:block; 
+    width:480px;
+    max-width: 90vw;
+}
+
+input[type=text], input[type=password], input[type=url], input[type=search], inputme,d≤ {
+    margin:3px 3px 1em 3px;
+    height:36px;
+    background-color: var(--sdblue);
+    color:white;
+    border:0.5px dotted grey;
+    border-radius: 3px;;
+}
 
 #session-message {
     position:absolute;
@@ -107,4 +127,66 @@ a {color:var(--text);}
             }
         }
     }
+}
+
+nav > .inner-wrapper {
+    display:grid;
+    grid-template: "left bulletnav" 80px / 1fr 4fr;
+    position:fixed; bottom:0;
+    height:80px;
+    width:100%;
+
+    & left {
+        grid-area:left;
+        display:flex;
+        gap:1em;
+        align-items: center;
+        justify-content: center;
+}
+
+    & .bullet-wrapper {
+        grid-area: bulletnav;
+        display:grid;
+        grid-template: "create ri" 80px / 1fr 3fr;
+        background-color:rgb(18, 49, 62);
+        border-radius: 50px 0 0 50px;
+        width:100%;
+        display:flex;
+            gap:1em;
+            flex-direction:row;
+            align-items: center;
+            justify-content: space-evenly;
+
+        & div.right {
+            grid-area: ri;
+            display:flex;
+            gap:1em;
+            flex-direction:row;
+            align-items: center;
+            justify-content: space-evenly;
+        }
+
+        & div.create-btn-wrapper {
+            grid-area: create;
+            display:flex;
+            gap:1em;
+            flex-direction:row;
+            align-items: center;
+            justify-content: space-evenly;
+
+            & button {
+                aspect-ratio: 1/1;
+                border-radius: 50px;
+                height:50px;
+                background-color: #3a0;
+            }
+            & ul {
+                position:absolute;
+                display:none;
+            }
+        }
+    }
+
+
+
 }

@@ -3,28 +3,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <%- include('./partials/head.ejs') %>
+    <%- include('./partials/head.ejs', {stylesheets:['registration']}) %>
 </head>
 <body>
     <nav>
     <div class="navbar">
         <div class="nav-links">
-            <a href="/">
-                <h1 id="nav-headder">JAX | Event-Based Spending Tracker App</h1>
-            </a>
+                <h1 id="nav-headder" style="font-size: 40pt;"><span style="font-size: 80pt;">JAX</span> <br> Event-Based Spending Tracker App</h1>
             <% if (useUser) { %>
-                <div class="nav-user">
-                    <a href="/user">[ Profile <%= user?.profile?.username %> ]</a>
-                    <a href="/user/dashboard">[ Dashboard<%= user?.profile?.displayname %> ]</a>
+                <div class="nav-user center flex-row">
+                    <a href="/user">Profile <%= user?.profile?.username %></a>
+                    <a href="/user/dashboard">Dashboard<%= user?.profile?.displayname %></a>
                     <a href="/auth/logout">Log-out</a>
                 </div>
                 <% if (useMessage) { %>
                     <h2><%= useMessage %></h2>
                 <% } %>
             <% } else { %>
-                <div class="nav-user">
-                    <a class="auth-link" href="/auth/login">Log-in</a>
-                    <a class="auth-link" href="/auth/registration">Sign-up</a>
+                <div class="nav-user btn-block">
+                    <a class="auth-link" href="/auth/login"><button>Log-in</button></a>
+                    <a class="auth-link" href="/auth/registration"><button>Sign-up</button></a>
                 </div>
             <% } %>
         </div>

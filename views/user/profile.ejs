@@ -9,7 +9,7 @@
 <nav>
     <a href="/auth/logout">Log-out</a>
 </nav>
-<main>
+<main id="user-profile">
     <section id="user-info">
         <h3>User Info</h3>
         <ul>
@@ -20,10 +20,10 @@
     </section>
     <hr>
     <section id="friends">
-        <h3>Friends</h3>
         <div class="block">
-            <h4><%= user.profile.friends?.length || "0" %> In Total</h4>
             <button type="button" class="type4">Add Friends</button>
+        <h3>Friends</h3>
+            <h4><%= user.profile.friends?.length || "0" %> In Total</h4>
         </div>
         <ul>
         <% user.profile.friends?.map(friend => { %>
@@ -35,15 +35,15 @@
     </section>
     <hr>
     <section id="Trackers">
-        <h3>Trackers</h3>
         <div class="block">
+        <a href="/documents/Tracker/new"><button type="button" class="type4">+ New Tracker</button></a>
+        <h3>Trackers</h3>
             <h4><%= user.trackers?.length || "0" %> In Total</h4>
-            <a href="/documents/Tracker/new"><button type="button" class="type4">+ New Tracker</button></a>
         </div>
         <ul>
         <% user.trackers?.map(tracker => { %>
             <a href="/documents/Tracker/<%= tracker._id %>"> <li>
-                <strong>Title: </strong><%= tracker.name %>
+                <strong><%= tracker.name %></strong><br>
                 <span><%= tracker?.members?.length || "0" %> Members</span>
                 <span><%= tracker?.description?.ellipses(120) || "No content" %></span>
             </li></a>

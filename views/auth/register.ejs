@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <%- include('../partials/head.ejs', { title: "Register" }) %>
+    <%- include('../partials/head.ejs', { title: "Register", stylesheets:['registration']  }) %>
 </head>
 <body>
     <nav>
@@ -11,8 +11,9 @@
             <a href="/auth/login">Log-in</a>
         </ul>
     </nav>
-        <div class="singup-container">
-            <h1>Create a new account for free</h1>
+        <div class="singup container">
+            <div class="jax-title">JAX</div>
+            <h1>Create a new account<br>For Free</h1>
             <% if (useMessage) { %> <p><%= useMessage %></p> <% } %>
             <form action="/auth/registration" method="POST">
                 <label for="username">Username:</label>

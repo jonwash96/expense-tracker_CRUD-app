@@ -1,0 +1,22 @@
+main#user-profile {
+    & button {float:right;}
+}
+
+section#Trackers ul {
+    list-style: none;
+    padding:0;
+
+    & li {
+        margin:0;
+        border-top: .5px solid grey;
+        padding:1em;
+    }
+
+    & li::before {
+        content: "📈";
+    }
+}
+
+main#new {
+    & button {float: right;}
+}

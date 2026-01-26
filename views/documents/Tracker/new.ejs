@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <%- include('../../partials/head.ejs', { title:"New Tracker", style:['dashboard'] }) %>
+    <%- include('../../partials/head.ejs', { title:"New Tracker", style:['profile'] }) %>
 </head>
 <body>
 <%- include('../../partials/headbar.ejs', { title:"New Tracker" }) %>
-<main>
+<main id="new">
+    <button type="button" onclick="history.back()">🔙 Back</button>
     <section id="page-nav">
-     <button type="button" onclick="history.back()">🔙 Back</button>
     </section>
 
     <section id="content">
