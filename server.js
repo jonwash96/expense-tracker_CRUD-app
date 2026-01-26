@@ -74,8 +74,41 @@ app.use((req,res,next) => {
     next();
 })
 //* ROUTE
-app.post('/test-form', (req,res) => {
-    res.json(req.body);
+const Tracker = require('./models/Tracker.js');
+const mongoose = require('mongoose');
+app.get('/test-form', (req,res) => {
+    res.render('saveDataToUser.ejs');
+})
+app.post('/test-form', async (req,res) => {
+    console.log(req.body)
+    let newDoc = new Tracker({
+        ...req.body,
+        owner:req.session.user.profile._id,
+        members:[
+            "69764f5bc12b13d78b440b8d",
+            "697640af0cdd358ceb1b9cea",
+        ]
+    });
+
+    newDoc = await newDoc.save();
+    console.log(newDoc);
+
+    const getUser = await User.findById(req.session.user._id).populate('trackers')
+    getUser.trackers.push(newDoc._id);
+    await getUser.save();
+    req.session.save();
+
+    const view = {
+        DOC:newDoc,
+        LOCAL_USER:req.session.user,
+        DB_USER:getUser,
+        LOCAL_USER_TRACKERS:req.session.user.trackers,
+        DB_USER_TRACKERS:getUser.trackers,
+        NEW_FRIEND1_ID:new mongoose.Types.ObjectId(),
+        NEW_FRIEND2_ID:new mongoose.Types.ObjectId()
+    };
+
+    res.json(view);
 })
 
 app.use('/auth', authController);

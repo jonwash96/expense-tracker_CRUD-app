@@ -1,4 +1,104 @@
-.profile-photo img {
-    height:40px;
-    border-radius: 50%;
+*{
+    font-family: Arial, Helvetica, sans-serif;
+    box-sizing: border-box;
+
+    --text:white;
+
+    --Llondon-sky:#899faa;
+    --london-sky:#596f7a;
+    --london-sky-op:#596f7aef;
+    --lcyan:#8cf;
+    --cyan:#4bf;
+    --dcyan:#0d9fbc;
+    --mint:#48996a;
+    --dmint:hsl(193, 41%, 22%);
+}
+
+.hide {display:none;}
+.show {display:inherit;}
+
+body {
+    background-color:var(--dmint);
+    color:white;
+    margin:0 auto;
+}
+
+#session-message {
+    position:absolute;
+    max-width:560px;
+    width:90vw;
+    background-color:var(--london-sky-op);
+    margin:0 auto;
+    text-align:center;
+    border:.5px solid var(--Llondon-sky);
+    border-radius: 26px;
+    box-shadow: 0 0 12px #0006;
+    padding:6px 12px;
+    transform:translateY(-50%);
+}
+
+button {
+    border:1px solid var(--lcyan);
+    background-color:var(--dcyan) ;
+    border-radius: 6px;
+    padding:10px;
+    color:white;
+}
+a {color:var(--text);}
+
+#headbar {
+    margin:10px 30px 5px 0;
+
+    & a {color:var(--text); text-decoration: none;}
+    h1 {margin:0;padding:0; font-size: 1.2rem;}
+    h2 {margin:0;padding:0; font-size: 12pt; color:var(--lcyan);}
+    
+    & .inner-wrapper {
+        /* border:1px dotted lightblue; */
+        border-radius: 2px 50px 50px 2px;
+        box-shadow: 0 0 25px #0003;
+        
+        display:grid;
+        grid-template: "notif bullet" 80px / 60px auto;
+        /* background-color:var(--mint); */
+        
+        gap:10px;
+        
+        & .notifications-wrapper {
+            grid-area:notif;
+            background-color:var(--mint);
+            border-radius: 0 2px 2px 0;
+            border:1px dotted var(--lcyan); 
+            /* border: 1px solid red; */
+            display:flex;
+            justify-content:center;
+            align-items:center;
+
+            & button {width:100%;aspect-ratio: 1/1;}
+        }
+
+        & .bullet-wrapper {
+            grid-area:bullet;
+            background-color:var(--mint);
+            border-radius: 2px 50px 50px 2px;
+            padding: 10px;
+            /* border:1px solid gold;  */
+            border:1px dotted var(--lcyan); 
+            display:flex;
+            justify-content: space-between;
+            align-items: center;
+
+            & header {grid-area:header;
+                /* border:1px solid green; */
+                display:grid;
+                grid-template: 1fr 2fr / 100%;
+            }
+            & #profile-photo img {
+                height:70px;
+                aspect-ratio: 1/1;
+                border-radius: 50%;
+                margin: 3px -3px 0 0;
+            }
+        }
+    }
 }

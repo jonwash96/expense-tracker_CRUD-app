@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+<section id="content">
+    <legend>Tracker Info</legend>
+        <form action="/test-form" method="POST">
+            <button type="submit">Save</button>
+            <label for="name">Title</label>
+            <input id="name" name="name" type="text" required value="Jazz Club">
+            
+            <label for="description">Description</label>
+            <input id="description" name="description" type="text" value="explore your musical side">
+            
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="ongoing" selected>Ongoing</option>
+                <option value="forthcoming">Forthcoming</option>
+                <option value="complete">Complete</option>
+                <option value="repayment">Repayment</option>
+                <option value="funding">Funding</option>
+            </select>
+
+
+
+            <label for="members-input">Members</label>
+            <input id="members-input" type="search" list="friends">
+            <button type="button" id="add-friend-btn">Add</button>
+            <datalist id="friends">
+                <option id="6976c7314f7d27234f998348" value="NU-Parker">
+                <option id="6976c9cfdb0ecd66f1adeb98" value="NU-Thomas">
+                <option value="NU-Monique">
+                <option value="NU-Jerry">
+                <option id="6976c7314f7d27234f998349" value="NU-Conrad">
+                <option id="6976c9cfdb0ecd66f1adeb99" value="NU-Allison">
+                <option value="NU-Courtney">
+                <% user.profile.friends?.map(friend => { %>
+                    <option data-uid="<%= friend._id %>">
+                        <%= friend.displayname %>
+                    </option>
+                    <option data-uid="<%= friend._id %>">
+                        <%= friend.username %>
+                    </option>
+                <% }) %>
+            </datalist>
+            <ul id="members-added">
+            </ul>
+
+            <button type="submit">Save</button>
+        </form>
+
+        <div id="console"></div>
+        
+<script id="handle-add-members" type="text/javascript">
+    const addFriend = document.getElementById('add-friend-btn');
+    const membersInput = document.getElementById('members-input');
+    const dataList = document.getElementById('friends');
+    const membersList = document.querySelectorAll('#friends option');
+    const membersAdded = document.getElementById('members-added');
+    const friends = {};
+    const getFriends = membersList.forEach(el => friends[el.value] = el.id);
+    const members = [];
+    const newNonUsers = [];
+    const addedOptions = [];
+
+    addFriend.addEventListener('click', (e) => {
+        log("click")
+        if (members.includes(friends[membersInput.value])
+        || newNonUsers.includes(membersInput.value)) {
+            log("return condition")
+            membersInput.style.border = "1px solid #f88";
+            membersInput.style.borderRadius = "3px";
+            log("Member already added!");
+            return;
+        };
+        log("past rtrn")
+        membersInput.style.border = "1px solid grey";
+        membersInput.style.borderRadius = "3px";
+
+        let value, reqArrNmae;
+        if (Object.keys(friends).includes(membersInput.value)) {
+            members.push(friends[membersInput.value])
+            value = new String(friends[membersInput.value]);
+            addedOptions.push(document.getElementById(value).cloneNode(true));
+            document.getElementById(value).remove();
+            reqArrName = 'members';
+            log("first condition")
+        } else {
+            value = membersInput.value
+            newNonUsers.push(value);
+            reqArrName = 'NUmembers';
+            log("else condition")
+        }
+        log("rest exe")
+        const li = document.createElement('li');
+            li.classList.add(value.replace(' ', '_'));
+        const text = document.createTextNode(membersInput.value);
+            li.appendChild(text);
+        const invisible = document.createElement('input');
+            invisible.type = 'hidden';
+            invisible.name = reqArrName;
+            invisible.value = value;
+            li.appendChild(invisible);
+        const remove = document.createElement('button');
+            remove.textContent = "❌";
+            remove.classList.add('list-remove-btn');
+            remove.addEventListener('click', (e) => {
+                document.getElementsByClassName(value)[0].remove();
+                if (reqArrName==='members') {
+                    members.splice(members.find(m=>m===value),1);
+                    const nodeIdx = addedOptions.findIndex(n=>n.id==value);
+                    dataList.appendChild(addedOptions[nodeIdx]);
+                    addedOptions.splice(nodeIdx,1);
+                }
+            });
+            li.appendChild(remove);
+        membersAdded.appendChild(li);
+
+        console.log(addedOptions);
+
+        membersInput.value = '';
+    })
+
+    function log(input) {
+        const text = document.createElement('p');
+        text.innerHTML = input;
+        return document.getElementById('console').appendChild(text)
+    };
+</script>
+<script id="handle-add-additional-fields" type="text/javascript">
+    const expense1ReceiptInputs = document.querySelectorAll('#expense1 .receipt input[type=text], #expense1 .receipt input[type=url]');
+    const expense1WebLinkInputs = document.querySelectorAll('#expense1 .webLink input[type=text], #expense1 .webLink input[type=url]');
+    const expense1PhotoInputs = document.querySelectorAll('#expense1 .photo input[type=text], #expense1 .photo input[type=url]');
+
+    const expense1ReceiptAddBtn = document.getElementById('expense1$receipt-add-btn');
+    const expense1WebLinkAddBtn = document.getElementById('expense1$webLink-add-btn');
+    const expense1PhotoAddBtn = document.getElementById('expense1$photo-add-btn');
+
+    for (let type of [
+        [expense1ReceiptInputs, 'receipt', 'Receipt'],
+        [expense1WebLinkInputs, 'webLink', 'Web Link'], 
+        [expense1PhotoInputs, 'photo', 'Photo'],
+    ]) { type[0].forEach(input => {
+            input.addEventListener('blur', (e) => {
+                if (Array.from(type[0]).every(i=>i.value!=='')) appendNewWebLink('expense1', type);
+        }) });
+    };
+
+    for (let btn of [
+        [expense1ReceiptAddBtn, [expense1ReceiptInputs, 'receipt', 'Receipt']], 
+        [expense1WebLinkAddBtn, [expense1WebLinkInputs, 'webLink', 'Web Link']], 
+        [expense1PhotoAddBtn, [expense1PhotoInputs, 'photo', 'Photo']]
+    ]) { btn[0].addEventListener('click', (e) => {
+            appendNewWebLink('expense1', btn[1]);
+        })
+    }
+
+    function appendNewWebLink(fieldsetID, [self, fieldType, displayName]) {
+        const count = document.querySelectorAll(`div.${fieldType}`).length+1;
+        const newWebLinkBlock = document.createElement('div');
+            newWebLinkBlock.classList.add(fieldType);
+            newWebLinkBlock.id = `${fieldsetID}$${fieldType}${count}`;
+
+            newWebLinkBlock.innerHTML 
+            = `<label for="${fieldsetID}$${fieldType}${count}_name">Title</label>
+               <input id="${fieldsetID}$${fieldType}${count}_name" name="${fieldsetID}$${fieldType}${count}_name" type="text">
+               <label for="${fieldsetID}$${fieldType}${count}_description">Description</label>
+               <input id="${fieldsetID}$${fieldType}${count}_description" name="${fieldsetID}$${fieldType}${count}_description" type="paragraph">
+               <label for="${fieldsetID}$${fieldType}${count}_url">URL</label>
+               <input id="${fieldsetID}$${fieldType}${count}_url" name="${fieldsetID}$${fieldType}${count}_url" type="url">
+               <button class="remove-field" data-id="${fieldsetID}$${fieldType}${count}" type="button">Remove ${displayName}</button>`
+
+        document.querySelector(`#${fieldsetID} #${fieldsetID}\\$${fieldType}s`).appendChild(newWebLinkBlock);
+        document.querySelectorAll(`#${fieldsetID}\\$${fieldType}${count} input[type=text], #${fieldsetID}\\$${fieldType}${count} input[type=url]`)
+            .forEach(input => {
+                input.addEventListener('blur', (e) => {
+                    if (Array.from(document.querySelectorAll(`#${fieldsetID} .${fieldType} input[type=text], #${fieldsetID} .${fieldType} input[type=url]`))
+                        .every(i=>i.value!=='')) appendNewWebLink(fieldsetID, [self, fieldType, displayName]);
+                }) });
+    }
+
+    function removeWebLink(webLinkID) {
+        document.getElementById(webLinkID).remove();
+        // Map over all web link elements in the fieldset
+        // If the wlCt is > the deleted one, replace it with that number -1
+    }
+</script>
+</body>
+</html>

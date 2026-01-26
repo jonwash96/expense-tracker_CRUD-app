@@ -18,7 +18,43 @@ const documentTypes = {Tracker, Expense, Item};
 
 //* ROUTE
 // Index - GET (all items) => "User Profile" :: Populate all user content, let js/dom/user-interaction handle which/how to show
-router.get('/', (req,res) => res.render('user/profile.ejs'));
+router.get('/', async (req,res) => {
+    try {
+        const populatedUser = await User.findById(req.session.user._id)
+            .populate({path: 'notifications.bodyID', options:{limit:50}})
+            .populate({path: 'profile', populate:{path: 'friends'}})
+            .populate({path: 'profile', populate:{path: 'photo'}})
+            .populate({path: 'activities', populate:{path: 'users'}})
+            .populate({path: 'trackers', populate:{path: 'members'}})
+            .populate("expenses receipts assignments");
+
+        console.log("POPULATED USER", populatedUser);
+
+        const data = {};
+        for (const tracker of populatedUser.trackers) {
+            data['expenses_calculated'] = tracker.totals.expenses
+                .reduce((a,b) => a += b, 0);
+            data['credits_calculated'] = tracker.totals.credits
+                .reduce((a,b) => a += b, 0);
+        };
+
+        data.totals = {
+            assignments:populatedUser.assignments.map(a => a.amount)
+                .reduce((a,b) => a += b, 0),
+            credits:populatedUser.credits.map(c => c.amount)
+                .reduce((a,b) => a += b, 0),
+        };
+
+        data.totals['margin'] = data.totals.assignments - data.totals.credits;
+        console.log("DATA", data)
+        console.log("USER", populatedUser)
+
+        if (data.expenses_calculated!==null) {}
+        req.session.save(()=>res.render('user/profile.ejs', { user:populatedUser, data }));
+    } catch (err) {
+        handleRouteError(req,res,err, 500)
+    };
+});
 // Index - GET (all items) => "User Dashboard" :: Populate all user content, let js/dom/user-interaction handle which/how to show
 router.get('/dashboard', async (req,res) => {
     try {
@@ -29,19 +65,23 @@ router.get('/dashboard', async (req,res) => {
             .populate({path: 'trackers', populate:{path: 'members'}})
             .populate("profile.photo expenses receipts assignments");
 
+        const data = {};
         populatedUser.trackers.forEach(tracker => {
-            tracker.totals['expenses_calculated'] = populatedUser.totals.expenses
+            data['expenses_calculated'] = tracker.totals.expenses
                 .reduce((a,b) => a += b, 0);
-            tracker.totals['credits_calculated'] = populatedUser.totals.credits
+            data['credits_calculated'] = tracker.totals.credits
                 .reduce((a,b) => a += b, 0);
         });
-        populatedUser['totals'] = {
+
+        data.totals = {
             assignments:populatedUser.assignments.map(a => a.amount),
             credits:populatedUser.credits.map(c => c.amount),
         };
-        populatedUser.totals['margin'] = populatedUser.totals.assignments - populatedUser.totals.credits;
+
+        data.totals['margin'] = data.totals.assignments - data.totals.credits;
+        console.log("DATA", data)
         req.session.user = populatedUser;
-        req.session.save(()=>res.render('user/dashboard.ejs'));
+        req.session.save(()=>res.render('user/dashboard.ejs', { data }));
     } catch (err) {
         handleRouteError(req,res,err, 500)
     };

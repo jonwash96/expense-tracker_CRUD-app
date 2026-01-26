@@ -14,8 +14,8 @@
             </a>
             <% if (useUser) { %>
                 <div class="nav-user">
-                    <a href="/user"><%= user?.profile?.username %></a>
-                    <a href="/user/dashboard"><%= user?.profile?.displayname %></a>
+                    <a href="/user">[ Profile <%= user?.profile?.username %> ]</a>
+                    <a href="/user/dashboard">[ Dashboard<%= user?.profile?.displayname %> ]</a>
                     <a href="/auth/logout">Log-out</a>
                 </div>
                 <% if (useMessage) { %>

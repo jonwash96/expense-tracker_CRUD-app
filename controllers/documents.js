@@ -81,12 +81,14 @@ router.delete('/:documentType/:documentId', async (req,res) => {
 })
 
 // Update - PUT (submission) => "Update Document" Update basic information of a major document type
-router.put('/:documentType/:documentId', async (req,res) => {
-    let Document;
-    for (let D in documentTypes) {
-        D===req.params.documentType && (Document = documentTypes[D])
-    };
+router.put('/Tracker/:documentId', async (req,res) => {
+    console.log("UPDATE", req.body);
     try {
+        const owner = await User.findById(req.session.user._id)
+            .populate({path: 'profile', populate:{path: 'friends'}})
+            .populate({path: 'activities', populate:{path: 'users'}})
+            .populate("trackers expenses receipts assignments");
+
         if (req.body.NUmembers) {
             for (let NUmember of req.body.NUmembers) {
                 const NUuserID = new mongoose.Types.ObjectId();
@@ -110,45 +112,41 @@ router.put('/:documentType/:documentId', async (req,res) => {
                 console.log("\n\n\nACCOUNT", account)
                 console.log("\nROFILE", profile)
 
-                req.session.user.friends.push(NUuserID);
+                owner.profile.friends.push(NUuserID);
                 if (!req.body.members) req.body.members = [];
                 req.body.members.push(NUuserprofileID);
 
-                for (let key in req.body) {const value = req.body[key];
-                    if (/assignees/.test(key)) {
-                        value.forEach(id => {
-                            if (id===NUmember) id = NUuserprofileID;
-                        })
-                    }
-                }
-            }
+            };
+        }
+        let oldDoc = await Tracker.findById(req.params.documentId);
+        let updatedDoc = new Tracker({
+            ...req.body,
+        owner:owner.profile._id,
+        });
+        for (const key in newDoc) {
+            oldDoc[key] = newDoc[key]
         };
+        await oldDoc.save();
 
-        let doc = await Document.findById(req.params.documentId);
-
-        doc['_updatedValues'] = req.body;
-        const updatedDoc = await doc.save();
-
-        res.locals.data = updatedDoc; 
-
-        let users;
-        switch (req.params.documentType) {
-            case 'Tracker': users = doc.members; break;
-            case 'Expense': users = (await Tracker.findById(doc.for)).members; break;
-            case 'Item': users = doc.assignees; break;
-        };
+        let users = newDoc.members;
+            
         let newActivity = new Activity({
             category:'update',
             priority:3,
             title:`${req.session.user.profile.displayname} modified ${updatedDoc.name}`,
             users,
         });
-        newActivity = newActivity.save();
+        newActivity = await newActivity.save();
+
         for (let uid of users) {
-            const user = await UserProfile.findById(uid).populate('userID');
-            user.notifications.push({ bodyID: newActivity._id, created_at:Date.now() });
+            new Promise(async (resolve,reject) => {
+                const user = await UserProfile.findById(uid).populate('userID');
+                user.notifications.push({ bodyID: newActivity._id, created_at:Date.now() });
+                resolve(await user.save());
+            })
         };
-        req.session.user.activities.push(newActivity._id);
+        owner.activities.push(newActivity._id);
+        await owner.save();
 
         req.session.save(()=>res.status(200).redirect(`/documents/${req.params.documentType}/${req.params.documentId}`));
     } catch (err) {
@@ -158,8 +156,12 @@ router.put('/:documentType/:documentId', async (req,res) => {
 
 // Create - POST (submission) => "Create Document" Create a new Document
 router.post('/Tracker', async (req,res) => {
-console.log(req.body)
     try {
+        const owner = await User.findById(req.session.user._id)
+            .populate({path: 'profile', populate:{path: 'friends'}})
+            .populate({path: 'activities', populate:{path: 'users'}})
+            .populate("trackers expenses receipts assignments");
+
         if (req.body.NUmembers) {
             for (let NUmember of req.body.NUmembers) {
                 const NUuserID = new mongoose.Types.ObjectId();
@@ -177,34 +179,27 @@ console.log(req.body)
                     username:NUmember.replace(' ', '_'),
                     profile:NUuserprofileID,
                 });
-                await newNonUser.save();
                 await newNonUserProfile.save();
+                await newNonUser.save();
 
-                req.session.user.friends.push(NUuserID);
-                if (!req.body.members) req.body.members = [];
+                owner.profile.friends.push(NUuserprofileID);
+                if (!req.body.members) req.body['members'] = [];
                 req.body.members.push(NUuserprofileID);
-
-                for (let key in req.body) {const value = req.body[key];
-                    if (/assignees/.test(key)) {
-                        value.forEach(id => {
-                            if (id===NUmember) id = NUuserprofileID;
-                        })
-                    }
-                }
             }
         };
 
-        const newTrackerId = new mongoose.Types.ObjectId();
-        let newDoc = new Tracker({ 
-            ...req.body, 
-            _id:newTrackerId,
-            owner:req.session.user.profile._id 
+        let newDoc = new Tracker({
+            ...req.body,
+            owner:req.session.user.profile._id,
         });
-        newDoc.save();
+        newDoc = await newDoc.save();
 
-        req.session.user.trackers.push(newDoc._id);
+        console.log(owner)
+        owner.trackers.push(newDoc._id);
+        await owner.save();
         req.session.save();
 
+        console.log('PUSHED NEW TRACKER TO USER', owner.trackers)
 
         let members, getMembers;
         if (req.body.members) {
@@ -223,7 +218,7 @@ console.log(req.body)
             category:'create',
             priority:3,
             title:`New Tracker Created`,
-            description:`${req.session.user.profile.displayname} created a new Tracker called ${newDoc.name} with ${members.names.join(', ')}`,
+            description:`${req.session.user.profile.displayname} created a new Tracker called ${newDoc.name} with ${members?.names?.join(', ')}`,
             users: members ? members.ids : []
         });
         newActivity = await newActivity.save();
@@ -234,103 +229,10 @@ console.log(req.body)
             };
         }
         req.session.user.activities.push(newActivity._id);
-
-        req.session.save(()=>res.status(200).redirect(`/documents/Tracker/${newTrackerId}`));
+        req.session.save(()=>res.redirect(`/documents/Tracker/${newDoc._id}`));
     } catch (err) {
-        handleRouteError(req,res,err, 500)
-    };
-})
-
-router.post('/Expense', async (req,res) => {
-    try {
-        const newExpenseId = new mongoose.Types.ObjectId();
-        let newDoc = new Expense({ 
-            ...req.body,
-            _id:newExpenseId,
-            for:req.query?.tracker || null,
-            owner:req.session.user.profile._id
-        });
-        newDoc.save();
-
-        req.session.user.expenses.push(newDoc._id);
-        req.session.user.save();
-
-        const getMembers = await Promise.all( //! Check Me. 
-            Array.from( new Set(Object.entries(req.body)
-                .filter(([k,v]) => /item\dd?\_assignees/.test(k))
-                .map(KVpair => KVpair[1]).flat())
-            ).map(async (member) => await UserProfile.findById(member))
-        );
-        
-        const members = {
-            names: getMembers.map(member => member.username),
-            ids: getMembers.map(member => member._id)
-        };
-        let newActivity = new Activity({
-            category:'create',
-            priority:3,
-            title:`New Expense Created`,
-            description:`${req.session.user.profile.displayname} created a new Expense called ${newDoc.name} with ${members.names.join(', ')}`,
-            users: members.ids
-        });
-        newActivity = await newActivity.save();
-        for (let member of Object.values(getMembers)) {
-            const user = await User.findById(member.userID);
-            user.notifications.push({ bodyID:newActivity._id, created_at:Date.now() });
-        };
-        req.session.user.activities.push(newActivity._id);
-
-        req.session.save(()=>res.status(200).redirect(`/documents/Expense/${newExpenseId}`));
-    } catch (err) {
-        handleRouteError(req,res,err, 500)
-    };
-})
-
-router.post('/Item', async (req,res) => {
-    try {
-        const newItemId = new mongoose.Types.ObjectId();
-        let newDoc = new Item({ 
-            ...req.body,
-            _id:newItemId,
-            for:req.query?.tracker || null,
-            owner:req.session.user.profile._id
-        });
-        newDoc.save();
-
-        req.session.user.items.push(newDoc._id);
-        req.session.user.save();
-
-        const getMembers = await Promise.all( //! Check Me. 
-            Array.from( new Set(Object.entries(req.body)
-                .filter(([k,v]) => /assignees/.test(k))
-                .map(KVpair => KVpair[1]).flat())
-            ).map(async (member) => await UserProfile.findById(member))
-        );
-        
-        const members = {
-            names: getMembers.map(member => member.username),
-            ids: getMembers.map(member => member._id)
-        };
-        let newActivity = new Activity({
-            category:'create',
-            priority:4,
-            title:`New Expense Item Created`,
-            description:`${req.session.user.profile.displayname} created a new Expense Item called ${newDoc.name} with ${members.names.join(', ')}`,
-            users: members.ids
-        });
-        newActivity = await newActivity.save();
-        for (let member of Object.values(getMembers)) {
-            const user = await User.findById(member.userID);
-            if (user.settings?.notifications.notifyEachItem) {
-                user.notifications.push({ bodyID:newActivity._id, created_at:Date.now() });
-            }
-        };
-        req.session.user.activities.push(newActivity._id);
-
-        req.session.save(()=>res.status(200).redirect(`/documents/Item/${newItemId}`));
-    } catch (err) {
-        handleRouteError(req,res,err, 500)
-    };
+        handleRouteError(req,res,err, 500);
+    }
 })
 
 // Edit - GET (populated form) => "Edit Document"
@@ -368,35 +270,25 @@ router.use((req,res,next) => {
 
 // Show - GET (one item) => "Item Title" :: View a single document
 router.get('/Tracker/:documentId', async (req,res) => {
-console.log(4)
     try { let doc;
-        console.log(5)
-        if (!req.session.tracker | !req.session.tracker?.isHydrated) {
-console.log(6, req.session.tracker)
-            doc = await Tracker.findById(req.params.documentId)
-                .populate('members')
-                .populate('owner')
-                .populate('expenses.items.assignees.credits');
-console.log(7, doc)
-            hydrateTotals(doc);
-console.log(8, doc)
-            doc.expenses.forEach(expense => {
-                hydrateTotals(expense);
-                expense.items.forEach(item => {
-                    item['credits_total'] = item.assignees.map(assignment => 
-                        assignment.credits.reduce((a,b) => a.amount += b.amount, 0) )
-            }) });
-console.log(9)
-            doc['recents'] = doc.expenses.map(expense => 
-                expense.items.sort((a,b) => b.updated_at - a.updated_at)
-            ).flat();
+        doc = await Tracker.findById(req.params.documentId)
+            .populate('members')
+            .populate('owner')
+            .populate('expenses.items.assignees.credits');
+        hydrateTotals(doc);
 
-            doc['isHydrated'] = true;
-console.log(10)
+        doc.expenses.forEach(expense => {
+            hydrateTotals(expense);
+            expense.items.forEach(item => {
+                item['credits_total'] = item.assignees.map(assignment => 
+                    assignment.credits.reduce((a,b) => a.amount += b.amount, 0) )
+        }) });
 
-            req.session.tracker = doc;
-            req.session.save();
-        }
+        doc['recents'] = doc.expenses.map(expense => 
+            expense.items.sort((a,b) => b.updated_at - a.updated_at)
+        ).flat();
+
+        doc['isHydrated'] = true;
         res.render('documents/Tracker/show.ejs', { tracker:doc })
     } catch (err) {
         handleRouteError(req,res,err, 500);

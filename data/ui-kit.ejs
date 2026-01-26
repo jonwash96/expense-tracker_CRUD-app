@@ -4,6 +4,10 @@
 
 <% let useMessage; try {useMessage = message} catch {useMessage = false} %>
 
+<section id="page-nav">
+    <button type="button" onclick="history.back()">🔙 Back</button>
+</section>
+
 <div class="chip">
     <img class="img" src="<%= /noimg.svg %>">
     <span><%= blank %></span>

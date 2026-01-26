@@ -14,17 +14,17 @@
                         <div class="title"><%= t.name %></div>
                         <div class="money-sign">$</div>
                         <div class="amount">
-                            <span><%= t.totals.credits_calculated %></span> / 
-                            <span>$<%= t.totals.expenses_calculated %></span>
+                            <span><%= data.totals.credits_calculated %></span> / 
+                            <span>$<%= data.totals.expenses_calculated %></span>
                         </div>
                         <div class="members">
-                            <% for (let i=0; i<2; i++) { if (!t.members[i]) break; %>
+                            <% try { for (let i=0; i<2; i++) { if (!t.members[i]) break; %>
                                 <div class="chip">
                                     <img src="<%= t.members[i].photo %>">
                                     <span><%= t.members[i].displayname %></span>
                                 </div>
-                            <% } %>
-                            <span>+ <%= t.members.length - 2 %> more</span>
+                                <span>+ <%= t.members?.length - 2 %> more</span>
+                            <% } } catch (err) {console.error(err); %><span>Data Unavailible</span> <% } %>
                         </div>
                     </div>
                 </a>
@@ -49,14 +49,14 @@
     <section id="user-summary">
         <figure class="card summary">
             <div class="pie-chart"
-            data-margin="<%= Math.abs(user.totals.margin) %>" 
-            data-color="<%= user.totals.margin>0 ? '#f66' : '#0f0 '%> ">
-                <p class="text-content"><%= user.totals.margin %></p>
+            data-margin="<%= Math.abs(data.totals.margin) %>" 
+            data-color="<%= data.totals.margin>0 ? '#f66' : '#0f0 '%> ">
+                <p class="text-content"><%= data.totals.margin %></p>
             </div>
             <h3>User Summary</h3>
             <figcaption>
-                <span class="assignments"><%= user.totals.assignments %></span>
-                <span class="credits"><%= user.totals.credits %></span>
+                <span class="assignments"><%= data.totals.assignments %></span>
+                <span class="credits"><%= data.totals.credits %></span>
             </figcaption>
         </figure>
     </section>

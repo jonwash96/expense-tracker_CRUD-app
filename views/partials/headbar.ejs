@@ -15,8 +15,12 @@
         <div class="bullet-wrapper">
             <a href="/user/dashboard">
                 <header>
-                    <h2><%= useSubTitle %></h2>
-                    <h1><%= useTitle %></h1>
+                    <h2><%= useSubTitle || user.profile.displayname %></h2>
+                    <% if (useTitle) { %>
+                        <h1><%= useTitle %></h1>
+                    <% } else { %>
+                        <h1><span style="color:#fc5;">JAX</span> Group<br> Expense Tracker</h1>
+                    <% } %>
                 </header>
             </a>
             <div id="profile-photo" class="profile-photo">
@@ -30,7 +34,7 @@
 </div>
 
 <% if (useMessage) %>
-<div id="session-message">
+<div id="session-message" class="<%= !useMessage ? "hide" : "show" %>">
     <p><%= useMessage %></p>
 </div>
 

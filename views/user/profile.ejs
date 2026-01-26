@@ -1,81 +1,96 @@
+<% String.prototype.ellipses = function(length) {return this.length > length ? this.substring(0,length)+"..." : this} %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <%- include('../partials/head', { title:user.name, stylesheets:['profile'] }) %>
 </head>
 <body>
-<%- include('../partials/headbar.ejs', { title:user.name }) %>
+<%- include('../partials/headbar.ejs', { title:"User Profile" }) %>
+<nav>
+    <a href="/auth/logout">Log-out</a>
+</nav>
 <main>
-    <ul>
-        <% for (let key of ['displayname', 'photo', 'friends']) { %>
-                <% console.log("PROFILE | -key:", key, "-type:", typeof user[key], "-object?", typeof user[key]==='object', "-value", user[key]) %>
-            <% if (typeof user.profile[key]==='object' && !Array.isArray(user.profile[key])) { %>
+    <section id="user-info">
+        <h3>User Info</h3>
+        <ul>
+            <li><strong>Display Name: </strong><%= user.profile.displayname %></li>
+            <li><strong>Username: </strong><%= user.profile.username %></li>
+            <li><strong>Friends: </strong><%= user.profile.friends.length %></li>
+        </ul>
+    </section>
+    <hr>
+    <section id="friends">
+        <h3>Friends</h3>
+        <div class="block">
+            <h4><%= user.profile.friends?.length || "0" %> In Total</h4>
+            <button type="button" class="type4">Add Friends</button>
+        </div>
+        <ul>
+        <% user.profile.friends?.map(friend => { %>
+            <li>
+                <strong>Name: </strong><%= friend.displayname %>
+            </li>
+        <% }) %>
+        </ul>
+    </section>
+    <hr>
+    <section id="Trackers">
+        <h3>Trackers</h3>
+        <div class="block">
+            <h4><%= user.trackers?.length || "0" %> In Total</h4>
+            <a href="/documents/Tracker/new"><button type="button" class="type4">+ New Tracker</button></a>
+        </div>
+        <ul>
+        <% user.trackers?.map(tracker => { %>
+            <a href="/documents/Tracker/<%= tracker._id %>"> <li>
+                <strong>Title: </strong><%= tracker.name %>
+                <span><%= tracker?.members?.length || "0" %> Members</span>
+                <span><%= tracker?.description?.ellipses(120) || "No content" %></span>
+            </li></a>
+        <% }) %>
+        </ul>
+    </section>
+    <hr>
+    <% if (data.totals.margin > 0) { %>
+        <section id="expenses">
+            <h3>Expenses You Owe</h3>
+            <div class="block">
+                <h4>$<%= data.totals.assignments || "0" %> In Total</h4>
+            </div>
+            <ul>
+            <% user.trackers.map(tracker => { %>
                 <li>
-                    <p><%= key %></p>
-                    <ul>
-                    <% for (let foo in user.profile[key]) { const bar = user.profile[key][foo]; %>
-                        <li>
-                            <span><strong cameltotitle><%= foo %>: </strong></span>
-                            <% try {%><span><%=bar%></span><%} catch {%><%="Nah"%><%} %>
-                        </li>
-                    <% } %>
-                    </ul>
+                    <strong>Title: </strong><%= tracker.name %>
+                    <span><%= tracker.members?.length || "0" %> Members</span>
+                    <span><%= tracker.description?.ellipses(120) || "No Content" %></span>
                 </li>
-            <% } else { %>
+            <% }) %>
+            </ul>
+        </section>
+    <% } else if (data.totals.margin < 0) { %>
+        <section id="expenses">
+            <h3>Credits you're owed</h3>
+            <div class="block">
+                <h4>$<%= data.totals.credits || "0" %> In Total</h4>
+            </div>
+            <ul>
+            <% user.trackers.map(tracker => { %>
                 <li>
-                    <span><strong cameltotitle><%= key %>: </strong></span>
-                    <span arraytocsv><%= user.profile[key] %></span>
+                    <strong>Title: </strong><%= tracker.name %>
+                    <span><%= tracker.members?.length || "0" %> Members</span>
+                    <span><%= tracker.description?.ellipses(120) || "No Content" %></span>
                 </li>
-            <% } %>
+            <% }) %>
+            </ul>
+        </section>
+        <% } else { %>
+            <section id="expenses">
+                <h3>Expenses</h3>
+                <h4>You're at even right now!<br>You don't owe anything, and nobody owes you anything.</h4>
+            </section>
         <% } %>
-        <% for (let key of ['username', 'activities', 'notifications', 'trackers', 'expenses', 'receipts', 'assignments', 'credits']) { %>
-                <% console.log("USER | -key:", key, "-type:", typeof user[key], "-object?", typeof user[key]==='object', "-value", user[key]) %>
-            <% if (typeof user[key]==='object' && !Array.isArray(user[key])) { %>
-                <li>
-                    <p><%= key %></p>
-                    <ul>
-                    <% for (let foo in user[key]) { const bar = user[key][foo]; %>
-                        <li>
-                            <span><strong cameltotitle><%= foo %>: </strong></span>
-                            <% try {%><span><%=bar%></span><%} catch {%><%="Nah"%><%} %>
-                        </li>
-                    <% } %>
-                    </ul>
-                </li>
-            <% } else if (Array.isArray(user[key])) { %>
-                <li>
-                    <p><%= key %></p>
-                    <ul>
-                    <% for (let val of user[key]) { %>
-                        <% if (typeof user[key]==='object' && !Array.isArray(user[key])) { %>
-                            <li>
-                                <p><%= key %></p>
-                                <ul>
-                                <% for (let foo in user[key]) { const bar = user[key][foo]; %>
-                                    <li>
-                                        <span><strong cameltotitle><%= foo %>: </strong></span>
-                                        <% try {%><span><%=bar%></span><%} catch {%><%="Nah"%><%} %>
-                                    </li>
-                                <% } %>
-                                </ul>
-                            </li>
-                        <% } else { %>
-                            <li>
-                                <span><strong cameltotitle><%= key %>: </strong></span>
-                                <span arraytocsv><%= user.profile[key] %></span>
-                            </li>
-                        <% } %>
-                    <% } %>
-                    </ul>
-                </li>
-            <% } else { %>
-                <li>
-                    <span><strong cameltotitle><%= key %>: </strong></span>
-                    <span arraytocsv><%= user.profile[key] %></span>
-                </li>
-            <% } %>
-        <% } %>
-    </ul>
+
+    
 </main>
 <%- include('../partials/navbar.ejs') %>
 </body>
