@@ -31,6 +31,7 @@ const trackerSchema = new mongoose.Schema({
 trackerSchema.pre('validate', function() {
     if (this.isNew) this.created_at = Date.now();
     this.updated_at = Date.now();
+    console.log("@User MID. this:", this)
 })
 
 

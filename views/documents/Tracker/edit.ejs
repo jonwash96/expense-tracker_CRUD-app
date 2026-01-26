@@ -7,15 +7,15 @@
 <%- include('../../partials/headbar.ejs', { title:"New Tracker" }) %>
 <main>
     <section id="page-nav">
-        <button type="button">🔙 Back</button>
+        <button type="button" onclick="history.back()">🔙 Back</button>
     </section>
 
     <section id="content">
         <legend>Tracker Info</legend>
-        <form action="/documents/Tracker" method="POST">
+        <form action="/documents/Tracker/<%= tracker._id %>/?_method=PUT" method="POST">
             <button type="submit">Save</button>
             <label for="title">Title</label>
-            <input id="title" name="title" type="text" value="<%= tracker.name %>" required>
+            <input id="title" name="name" type="text" value="<%= tracker.name %>" required>
             
             <label for="description">Description</label>
             <input id="description" name="description" type="text" value="<%= tracker.description %>">
@@ -210,32 +210,6 @@
             addedOptions.push(document.getElementById(value).cloneNode(true));
             document.getElementById(value).remove();
             reqArrName = 'members';
-            
-            // const li = document.createElement('li');
-            //     li.classList.add(value);
-            // const text = document.createTextNode(membersInput.value);
-            //     li.appendChild(text);
-            // const invisible = document.createElement('input');
-            //     invisible.type = 'hidden';
-            //     invisible.name = 'members';
-            //     invisible.value = value;
-            //     li.appendChild(invisible);
-            // const remove = document.createElement('button');
-            //     remove.textContent = "❌";
-            //     remove.classList.add('list-remove-btn');
-            //     remove.addEventListener('click', (e) => {
-            //         document.getElementsByClassName(value)[0].remove();
-            //         members.splice(members.find(m=>m===value),1);
-            //         const nodeIdx = addedOptions.findIndex(n=>n.id==value);
-            //         dataList.appendChild(addedOptions[nodeIdx]);
-            //         addedOptions.splice(nodeIdx,1);
-            //     });
-            //     li.appendChild(remove);
-            // membersAdded.appendChild(li);
-
-            // console.log(addedOptions)
-
-            // membersInput.value = '';
         } else {
             value = membersInput.value
             newNonUsers.push(value);

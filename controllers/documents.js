@@ -27,12 +27,12 @@ router.use((req,res,next) => {
 router.get('/', async (req,res) => {
     try {
         const populatedUser = await User.findById(req.session.user)
+            .populate({path: 'trackers', populate:{path: 'members'}})
             .populate({path: 'profile', populate:{path: 'friends'}})
             .populate({path: 'activities', populate:{path: 'users'}})
-            .populate("trackers expenses receipts assignments");
+            .populate("expenses receipts assignments")
 
-        req.session.user = populatedUser;
-        req.session.save(()=>res.render('user/index.ejs'));
+        req.session.save(()=>res.render('documents/index.ejs', { trackers:populatedUser.trackers} ));
     } catch (err) {
         handleRouteError(req,res,err, 500)
     };
@@ -45,19 +45,11 @@ router.get('/:documentType/new', async (req,res) => {
 })
 
 // Delete - DELETE (submission) => "Delete Document" :: js/dom handles request confirmation before sending the request to the server
-router.delete('/:documentType/:documentId', async (req,res) => {
-    let Document;
-    for (let D in documentTypes) {
-        D===req.params.documentType && (Document = documentTypes[D])
-    };
+router.delete('/:documentId', async (req,res) => {
     try {
-        const doc = Document.findById(req.params.documentId);
-        let users;
-        switch (req.params.documentType) {
-            case 'Tracker': users = doc.members; break;
-            case 'Expense': users = (await Tracker.findById(doc.for)).members; break;
-            case 'Item': users = doc.assignees; break;
-        };
+        const doc = Tracker.findById(req.params.documentId);
+        let users = doc.members;
+        
         let newActivity = new Activity({
             category:'delete',
             priority:3,
@@ -65,16 +57,20 @@ router.delete('/:documentType/:documentId', async (req,res) => {
             users,
         });
         newActivity = newActivity.save();
-        for (let uid of users) {
-            const user = await UserProfile.findById(uid).populate('userID');
-            user.notifications.push({ bodyID: newActivity._id, created_at:Date.now() });
+        if (users) {
+            for (let uid of users) {
+                const user = await UserProfile.findById(uid).populate('userID');
+                user.notifications?.push({ bodyID: newActivity._id, created_at:Date.now() });
+            };
         };
-        req.session.user.activities.push(newActivity._id);
+        const owner = await User.findById(req.session.user)
+        owner.activities.push(newActivity._id);
+        await owner.save();
         
-        await Document.findByIdAndDelete(doc);
+        await Tracker.findByIdAndDelete(doc._id);
 
         req.session.message = `${doc.name} Successfully Deleted`;
-        req.session.save(()=>res.status(204).redirect(`/documents/${req.params.documentType}`));
+        req.session.save(()=>res.status(204).redirect('/documents'));
     } catch (err) {
         handleRouteError(req,res,err, 500)
     };
@@ -89,7 +85,9 @@ router.put('/Tracker/:documentId', async (req,res) => {
             .populate({path: 'activities', populate:{path: 'users'}})
             .populate("trackers expenses receipts assignments");
 
-        if (req.body.NUmembers) {
+        if (req.body.NUmembers) {if (!Array.isArray(req.body.NUmembers)) {
+            req.body.NUmembers = req.body.NUmembers.split();
+        }
             for (let NUmember of req.body.NUmembers) {
                 const NUuserID = new mongoose.Types.ObjectId();
                 const NUuserprofileID = new mongoose.Types.ObjectId();
@@ -118,17 +116,9 @@ router.put('/Tracker/:documentId', async (req,res) => {
 
             };
         }
-        let oldDoc = await Tracker.findById(req.params.documentId);
-        let updatedDoc = new Tracker({
-            ...req.body,
-        owner:owner.profile._id,
-        });
-        for (const key in newDoc) {
-            oldDoc[key] = newDoc[key]
-        };
-        await oldDoc.save();
+        let updatedDoc = await Tracker.findByIdAndUpdate(req.params.documentId, {...req.body, updated_at:Date.now()});
 
-        let users = newDoc.members;
+        let users = updatedDoc.members;
             
         let newActivity = new Activity({
             category:'update',
@@ -139,16 +129,17 @@ router.put('/Tracker/:documentId', async (req,res) => {
         newActivity = await newActivity.save();
 
         for (let uid of users) {
-            new Promise(async (resolve,reject) => {
+            await new Promise(async (resolve,reject) => {
                 const user = await UserProfile.findById(uid).populate('userID');
-                user.notifications.push({ bodyID: newActivity._id, created_at:Date.now() });
+                console.log("@PROMISE", user)
+                user.notifications?.push({ bodyID: newActivity._id, created_at:Date.now() });
                 resolve(await user.save());
             })
         };
         owner.activities.push(newActivity._id);
         await owner.save();
 
-        req.session.save(()=>res.status(200).redirect(`/documents/${req.params.documentType}/${req.params.documentId}`));
+        req.session.save(()=>res.status(200).redirect(`/documents/Tracker/${req.params.documentId}`));
     } catch (err) {
         handleRouteError(req,res,err, 500)
     };
@@ -162,7 +153,9 @@ router.post('/Tracker', async (req,res) => {
             .populate({path: 'activities', populate:{path: 'users'}})
             .populate("trackers expenses receipts assignments");
 
-        if (req.body.NUmembers) {
+        if (req.body.NUmembers) {if (!Array.isArray(req.body.NUmembers)) {
+            req.body.NUmembers = req.body.NUmembers.split();
+        };
             for (let NUmember of req.body.NUmembers) {
                 const NUuserID = new mongoose.Types.ObjectId();
                 const NUuserprofileID = new mongoose.Types.ObjectId();
@@ -293,26 +286,6 @@ router.get('/Tracker/:documentId', async (req,res) => {
     } catch (err) {
         handleRouteError(req,res,err, 500);
     }
-})
-
-router.use((req,res,next) => {
-    console.log(3.3)
-    next();
-})
-
-router.get('/:documentType/:documentId', async (req,res) => {
-    let Document;
-    for (let D in documentTypes) {
-        D===req.params.documentType && (Document = documentTypes[D])
-    };
-
-    try {
-        const doc = await Document.findById(req.params.documentId);
-        res.render(`documents/${req.params.documentType}/show.ejs`, { doc })
-    } catch (err) {
-        console.log(6.5)
-        handleRouteError(req,res,err, 500)
-    };
 })
 
 //* IO

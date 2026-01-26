@@ -8,28 +8,28 @@
     <%- include('../../partials/headbar.ejs', { title:tracker.name, subtitle:"Spending Tracker" }) %>
 <main>
     <section id="page-nav">
-     <button type="button" onclick="history.back()">🔙 Back</button>
+        <button type="button" onclick="history.back()">🔙 Back</button>
     </section>
     <section id="details">
         <div class="inner-wrapper">
             <button type="button"><img height="10px" src="/svg/ellipsis.svg"></button>
-            <ul class="context-menu">
+            <div class="context-menu">
                 <% if (user.profile._id==tracker.owner._id) { %>
-                    <a href="/documents/Tracker/<%= tracker._id %>/edit">
-                        <li>Edit</li>
-                    </a>
-                    <form action="/documents/<%= tracker._id %>?_method=DELETE" method="POST">
-                        <li onclick="submit()">Delete</li>
+                    <form action="/documents/Tracker/<%= tracker._id %>/edit" method="GET">
+                        <button type="submit">Edit</button>
                     </form>
-                    <li>Members</li>
+                    <form action="/documents/<%= tracker._id %>?_method=DELETE" method="POST">
+                        <button type="submit">Delete</button>
+                    </form>
+                    <button type="submit">+/-Members</button>
                 <% } %>
                 <form action="/documents/<%= tracker._id %>/duplicate?_method=PUT" method="POST">
-                    <li onclick="submit()">Duplicate</li>
+                    <button type="button">Duplicate</button>
                 </form>
-                <a href="/documents/Tracker/<%= tracker._id %>/share">
-                    <li>Share</li>
-                </a>
-            </ul>
+                <form action="/documents/<%= tracker._id %>/share" method="GET">
+                    <button type="button">Share</button>
+                </form>
+            </div>
             <% if (tracker.description) { %>
                 <% if (tracker.description.length > 128) { %>
                     <span class="description"><%= tracker.description.ellipses(128) %></span>

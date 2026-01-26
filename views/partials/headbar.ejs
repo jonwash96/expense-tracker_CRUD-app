@@ -46,4 +46,14 @@
         const variable = match.match(/(?<=\$\{).+(?=\})/g);
         match.replace(/.+/, variables[variable])
     })
+
+    setTimeout(()=>{
+        if (document.getElementById('session-message').classList.includes('show')) {
+            (document.getElementById('session-message')).classList.replace('show', 'hide');
+        }
+    }, 6000)
+
+    (document.getElementById('session-message')).addEventListener('click', (e)=>{
+        if (e.target.classList.includes('show')) e.target.classList.replace('show', 'hide';)
+    })
 </script>

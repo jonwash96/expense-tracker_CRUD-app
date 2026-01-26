@@ -1,0 +1,42 @@
+<% String.prototype.ellipses = function(length) {return this.length > length ? this.substring(0,length)+"..." : this} %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head', { title:"Documents", stylesheets:['profile'] }) %>
+</head>
+<body>
+<%- include('../partials/headbar.ejs', { title:"Documents" }) %>
+<section id="page-nav">
+    <button type="button" onclick="history.back()">🔙 Back</button>
+</section>
+<main>
+    <section id="Trackers">
+        <h3>Trackers</h3>
+        <div class="block">
+            <h4><%= trackers?.length || "0" %> In Total</h4>
+            <a href="/documents/Tracker/new"><button type="button" class="type4">+ New Tracker</button></a>
+        </div>
+        <% trackers?.map(tracker => { %>
+            <hr>
+            <a href="/documents/Tracker/<%= tracker._id %>">
+                <h3><strong><%= tracker.name %></strong></h3><br>
+                <div class="chips">
+                    <div class="chip">
+                        <div class="img">🕦</div>
+                        <span><%= new Date(tracker.created_at).toDateString() %></span>
+                    </div>
+                    <div class="chip">
+                        <div class="img">⏱️</div>
+                        <span><%= new Date(tracker.updated_at).toDateString() %></span>
+                    </div>
+                </div>
+                <span><%= tracker?.members?.length || "0" %> Members</span><br>
+                <span><%= tracker?.description?.ellipses(120) || "No content" %></span>
+            </a>
+        <% }) %>
+        <hr>
+    </section>
+</main>
+<%- include('../partials/navbar.ejs') %>
+</body>
+</html>

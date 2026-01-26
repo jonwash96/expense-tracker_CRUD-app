@@ -89,8 +89,13 @@ router.get('/dashboard', async (req,res) => {
 
 router.get('/notifications', async (req,res) => {
     try {
-        const user = await User.findById(req.session.user);
-        res.render('user/notifications.ejs', { user, returnTo:req.query.returnTo })
+        const user = await User.findById(req.session.user)
+            .populate({path: 'notifications.bodyID', options:{limit:50}})
+            .populate({path: 'profile', populate:{path: 'friends'}})
+            .populate({path: 'profile', populate:{path: 'photo'}})
+            .populate({path: 'activities', populate:{path: 'users'}})
+
+        res.render('user/notifications.ejs', { user, notifications:user.notifications })
     } catch (err) {
         handleRouteError(req,res,err, 500);
     }

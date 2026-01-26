@@ -1,0 +1,48 @@
+<% String.prototype.ellipses = function(length) {return this.length > length ? this.substring(0,length)+"..." : this} %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head', { title:user.name, stylesheets:['profile'] }) %>
+</head>
+<body>
+<%- include('../partials/headbar.ejs', { title:"User Profile" }) %>
+<section id="page-nav">
+    <button type="button" onclick="history.back()">🔙 Back</button>
+</section>
+<main>
+    <section id="user-info">
+        <h3>User Info</h3>
+        <ul>
+            <li><strong><%= user.profile.displayname %></strong></li>
+            <li><strong><%= user.profile.username %></li>
+        </ul>
+    </section>
+    <hr>
+    <section id="notifications">
+        <h3>Notifications (<%= notifications.length || "0" %>)</h3>
+        <br>
+        <% for (const notification of notifications) { %>
+            <div class="card notification">
+                <header>
+                    <div class="title" <%= notification.status==='unseen' && "style='font-weight:bold;'" %>>
+                        <%= notification.bodyID.title %>
+                    </div>
+                    <div class="chips">
+                        <div class="chip">
+                            <div class="img">🕦</div>
+                            <span><%= new Date(notification.created_at).toDateString() %></span>
+                        </div>
+                    </div>
+                </header>
+                <div class="content">
+                    <p class="description" <%= notification.status==='unseen' && "style='font-weight:bold;'" %>>
+                        <%= notification.bodyID.description || "" %>
+                    </p>
+                </div>
+            </div>
+        <% } %>
+    </section>
+</main>
+<%- include('../partials/navbar.ejs') %>
+</body>
+</html>
