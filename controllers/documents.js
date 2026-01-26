@@ -48,6 +48,42 @@ router.get('/:documentType/new', async (req,res) => {
 router.delete('/:documentId', async (req,res) => {
     try {
         const doc = Tracker.findById(req.params.documentId);
+        const name = new String(doc.name);
+        let users = doc.members;
+        
+        let newActivity = new Activity({
+            category:'delete',
+            priority:3,
+            title:`${req.session.user.profile.displayname} Deleted ${doc.name}`,
+            users,
+        });
+        newActivity = newActivity.save();
+        if (users && users.length > 0) {
+            for (let uid of users) {
+                const user = await UserProfile.findById(uid).populate('userID');
+                user?.notifications?.push({ bodyID: newActivity._id, created_at:Date.now() });
+            };
+        };
+        const owner = await User.findById(req.session.user)
+        owner.activities.push(newActivity._id);
+        await owner.save();
+        
+       await doc.deleteOne();
+       try {
+           req.session.user.trackers.splice(tracker => 
+               tracker.findIndex(t => t._id===doc._id), 1);
+       } catch (err) {null}
+
+        req.session.message = `${name} Successfully Deleted`;
+        req.session.save(()=>res.status(204).redirect('/documents'));
+    } catch (err) {
+        handleRouteError(req,res,err, 500)
+    };
+})
+router.delete('/:documentId/old', async (req,res) => {
+    try {
+        const doc = Tracker.findById(req.params.documentId);
+        const name = new String(doc.name);
         let users = doc.members;
         
         let newActivity = new Activity({
@@ -68,8 +104,10 @@ router.delete('/:documentId', async (req,res) => {
         await owner.save();
         
         await Tracker.findByIdAndDelete(doc._id);
+        req.session.user.trackers.splice(tracker => 
+            tracker.findIndex(t => t._id===doc._id), 1);
 
-        req.session.message = `${doc.name} Successfully Deleted`;
+        req.session.message = `${name} Successfully Deleted`;
         req.session.save(()=>res.status(204).redirect('/documents'));
     } catch (err) {
         handleRouteError(req,res,err, 500)

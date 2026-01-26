@@ -18,7 +18,7 @@
                     <form action="/documents/Tracker/<%= tracker._id %>/edit" method="GET">
                         <button type="submit">Edit</button>
                     </form>
-                    <form action="/documents/<%= tracker._id %>?_method=DELETE" method="POST">
+                    <form action="/documents/<%= tracker._id %>?_method=DELETE&name=<%= tracker.name %>" method="POST">
                         <button type="submit">Delete</button>
                     </form>
                     <button type="submit">+/-Members</button>
@@ -74,7 +74,7 @@
         </div>
         <div class="inner-wrapper slider-container">
             <% for (let i=0; i<5; i++) { if (!tracker.recents[i]) break; %>
-                <a href="/documents/Expense/<%= tracker.recents[i]._id %>">
+                <a href="/documents/Tracker/<%= tracker.recents[i]._id %>">
                     <div class="card Item">
                         <header>
                             <div class="right">

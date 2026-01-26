@@ -48,12 +48,12 @@
     })
 
     setTimeout(()=>{
-        if (document.getElementById('session-message').classList.includes('show')) {
+        if (document.getElementById('session-message').classList.contains('show')) {
             (document.getElementById('session-message')).classList.replace('show', 'hide');
         }
     }, 6000)
 
     (document.getElementById('session-message')).addEventListener('click', (e)=>{
-        if (e.target.classList.includes('show')) e.target.classList.replace('show', 'hide')
+        if (e.target.classList.contains('show')) e.target.classList.replace('show', 'hide')
     })
 </script>

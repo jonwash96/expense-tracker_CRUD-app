@@ -8,30 +8,32 @@
 <main>
     <section id="trackers">
         <div class="inner-wrapper slider-container">
-            <% user.trackers.map(t => { %>
-                <a href="/documents/Tracker/<%= t._id %>">
+            <% try { %>
+            <% user.trackers.map(tracker => { %>
+
                     <div class="card tracker">
-                        <div class="title"><%= t.name %></div>
+                        <div class="title"><%= tracker.name %></div>
                         <div class="money-sign">$</div>
                         <div class="amount">
                             <span><%= data.totals.credits_calculated %></span> / 
                             <span>$<%= data.totals.expenses_calculated %></span>
                         </div>
                         <div class="members">
-                            <% try { for (let i=0; i<2; i++) { if (!t.members[i]) break; %>
+                            <% for (let i=0; i<2; i++) { if (!tracker.members[i]) break; %>
                                 <div class="chip">
-                                    <img src="<%= t.members[i].photo %>">
-                                    <span><%= t.members[i].displayname %></span>
+                                    <img src="<%= tracker.members[i].photo %>">
+                                    <span><%= tracker.members[i].displayname %></span>
                                 </div>
-                                <span>+ <%= t.members?.length - 2 %> more</span>
-                            <% } } catch (err) {console.error(err); %><span>Data Unavailible</span> <% } %>
+                                <span>+ <%= tracker.members?.length - 2 %> more</span>
+                            <% } %>
                         </div>
                     </div>
-                </a>
-             <% }) %>
+
+             <% }) } catch (err) {console.error(err); %><span>Data Unavailible</span> <% } %>
         </div>
     </section>
 
+    <% if (user.recents?.length > 0) { %>
     <section id="recents">
         <h3>Recents</h3>
         <div class="inner-wrapper slider-container">
@@ -45,6 +47,7 @@
             <% } %>
         </div>
     </section>
+    <% } %>
 
     <section id="user-summary">
         <figure class="card summary">
