@@ -1,6 +1,6 @@
-# Expense Tracker CRUD app
+# JAX | Expense Tracker CRUD app
 
-![triptych](assets/triptych.jpg)
+![triptych](triptych.jpg)
 
 A simple mobile-first web application to allow individuals & groups to track expenses from a project/event-oriented standpoint.
 
