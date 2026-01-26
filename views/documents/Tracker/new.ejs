@@ -101,6 +101,7 @@
             li.appendChild(invisible);
         const remove = document.createElement('button');
             remove.textContent = "❌";
+            remove.type = 'button';
             remove.classList.add('list-remove-btn');
             remove.addEventListener('click', (e) => {
                 document.getElementsByClassName(value)[0].remove();

@@ -57,10 +57,10 @@ router.delete('/:documentId', async (req,res) => {
             users,
         });
         newActivity = newActivity.save();
-        if (users) {
+        if (users && users.length > 0) {
             for (let uid of users) {
                 const user = await UserProfile.findById(uid).populate('userID');
-                user.notifications?.push({ bodyID: newActivity._id, created_at:Date.now() });
+                user?.notifications?.push({ bodyID: newActivity._id, created_at:Date.now() });
             };
         };
         const owner = await User.findById(req.session.user)
@@ -128,14 +128,16 @@ router.put('/Tracker/:documentId', async (req,res) => {
         });
         newActivity = await newActivity.save();
 
-        for (let uid of users) {
-            await new Promise(async (resolve,reject) => {
-                const user = await UserProfile.findById(uid).populate('userID');
-                console.log("@PROMISE", user)
-                user.notifications?.push({ bodyID: newActivity._id, created_at:Date.now() });
-                resolve(await user.save());
-            })
-        };
+        if (users.lenght > 0) {
+            for (let uid of users) {
+                await new Promise(async (resolve,reject) => {
+                    const user = await UserProfile.findById(uid).populate('userID');
+                    console.log("@PROMISE", user)
+                    user?.notifications?.push({ bodyID: newActivity._id, created_at:Date.now() });
+                    resolve(await user.save());
+                })
+            };
+        }
         owner.activities.push(newActivity._id);
         await owner.save();
 
@@ -215,7 +217,7 @@ router.post('/Tracker', async (req,res) => {
             users: members ? members.ids : []
         });
         newActivity = await newActivity.save();
-        if (getMembers) {
+        if (getMembers && getMembers.length > 0) {
             for (let member of getMembers) {
                 const user = await User.findById(member.userID);
                 user.notifications.push({ bodyID: newActivity._id, created_at:Date.now() });
